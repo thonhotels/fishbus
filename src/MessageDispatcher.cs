@@ -60,8 +60,11 @@ namespace Thon.Hotels.FishBus
             {
                 var command = JsonConvert.DeserializeObject(body, typeFromLabel);
 
-                foreach (var handler in Registry.GetHandlers(command.GetType()))
-                    await CallHandler(handler, command, markCompleted);
+                using (var scope = ScopeFactory.CreateScope())
+                {
+                    foreach (var handler in Registry.GetHandlers(command.GetType(), scope))
+                        await CallHandler(handler, command, markCompleted);
+                }
             }
             else
             {

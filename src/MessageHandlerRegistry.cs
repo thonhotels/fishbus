@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Thon.Hotels.FishBus
 {
@@ -39,11 +40,11 @@ namespace Thon.Hotels.FishBus
             MessageHandlers[x.message].Add(x.handler);
         }
 
-        public IEnumerable<object> GetHandlers(Type messageType)
+        public IEnumerable<object> GetHandlers(Type messageType, IServiceScope scope)
         {
             return MessageHandlers.ContainsKey(messageType) ?
                 MessageHandlers[messageType]
-                    .Select(t => ServiceProvider.GetService(t)) :
+                    .Select(t => scope.ServiceProvider.GetRequiredService(t)) :
                     new List<object>();
         }
     }
