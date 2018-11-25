@@ -6,14 +6,14 @@ namespace FishbusTests.MessageHandlers
 {
     public class MessageA
     {
-
+        public string AProp1 { get; set; }
     }
 
     public class HandlerA : IHandleMessage<MessageA>
     {
-        public Task Handle(MessageA message, Func<Task> markAsComplete)
+        public virtual Task Handle(MessageA message, Func<Task> markAsComplete)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

@@ -10,6 +10,10 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
 
+// tests need access to this method:
+// internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
+[assembly:System.Runtime.CompilerServices.InternalsVisibleTo("FishbusTests")]
+
 namespace Thon.Hotels.FishBus
 {
     public class MessageDispatcher
@@ -53,17 +57,17 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        private async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
+        internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
         {
             var typeFromLabel = Registry.GetMessageTypeByName(label);
             if (typeFromLabel != default(Type))
             {
-                var command = JsonConvert.DeserializeObject(body, typeFromLabel);
+                var message = JsonConvert.DeserializeObject(body, typeFromLabel);
 
                 using (var scope = ScopeFactory.CreateScope())
                 {
-                    foreach (var handler in Registry.GetHandlers(command.GetType(), scope))
-                        await CallHandler(handler, command, markCompleted);
+                    foreach (var handler in Registry.GetHandlers(message.GetType(), scope))
+                        await CallHandler(handler, message, markCompleted);
                 }
             }
             else
