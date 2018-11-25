@@ -55,7 +55,7 @@ namespace Thon.Hotels.FishBus
 
         private async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
         {
-            var typeFromLabel = TypeFromLabel(label);
+            var typeFromLabel = Registry.GetMessageTypeByName(label);
             if (typeFromLabel != default(Type))
             {
                 var command = JsonConvert.DeserializeObject(body, typeFromLabel);
@@ -70,11 +70,6 @@ namespace Thon.Hotels.FishBus
             {
                 Log.Debug("", body);
             }
-        }
-
-        private System.Type TypeFromLabel(string label)
-        {
-            return typeof(MessageDispatcher).Assembly.GetTypes().FirstOrDefault(type => type.FullName == label);
         }
 
         private Task CallHandler(object handler, object message, Func<Task> markCompleted)

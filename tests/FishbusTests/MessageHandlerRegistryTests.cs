@@ -55,5 +55,24 @@ namespace FishbusTests
             var handlers = sut.GetHandlers(typeof(MessageA), scope).ToList();
             Assert.Empty(handlers);
         }
+
+        [Fact]
+        public void GetMessageTypeByNameReturnsTypeOfRegisteredMessage()
+        {
+            IEnumerable<Type> MessageHandlerTypes()
+            {
+                return new [] 
+                    {
+                        typeof(HandlerA),
+                        typeof(HandlerB),
+                        typeof(NotAHandler)
+                    };
+            }
+            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
+
+            var messageType = sut.GetMessageTypeByName(typeof(MessageA).FullName);
+            Assert.NotNull(messageType);
+            Assert.Equal(typeof(MessageA), messageType);
+        }
     }
 }

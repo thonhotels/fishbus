@@ -23,13 +23,11 @@ namespace Thon.Hotels.FishBus
                 .ForEach(AddHandledCommand);
         }
 
-        private IEnumerable<(Type handler, Type message)> GetHandledCommands(Type messageHandlerType)
-        {
-            return messageHandlerType
+        private IEnumerable<(Type handler, Type message)> GetHandledCommands(Type messageHandlerType) =>
+            messageHandlerType
                             .GetInterfaces()
                             .Where(i => typeof(IHandleMessage<>).IsAssignableFrom(i.GetGenericTypeDefinition()))
                             .Select(i => (handler: messageHandlerType, message: i.GenericTypeArguments.Single()));
-        }
 
         private void AddHandledCommand((Type handler, Type message) x)
         {
@@ -38,12 +36,15 @@ namespace Thon.Hotels.FishBus
             MessageHandlers[x.message].Add(x.handler);
         }
 
-        public IEnumerable<object> GetHandlers(Type messageType, IServiceScope scope)
-        {
-            return MessageHandlers.ContainsKey(messageType) ?
+        public IEnumerable<object> GetHandlers(Type messageType, IServiceScope scope) =>
+            MessageHandlers.ContainsKey(messageType) ?
                 MessageHandlers[messageType]
                     .Select(t => scope.ServiceProvider.GetRequiredService(t)) :
                     new List<object>();
-        }
+
+        public Type GetMessageTypeByName(string label) =>
+            MessageHandlers
+                .Keys
+                .FirstOrDefault(type => type.FullName == label);        
     }
 }

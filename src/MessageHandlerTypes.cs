@@ -7,8 +7,8 @@ namespace Thon.Hotels.FishBus
 {
     public static class MessageHandlerTypes
     {
-        public static IEnumerable<Type> GetAll() =>
-            GetAllTypesImplementingOpenGenericType(typeof(IHandleMessage<>), typeof(MessageHandlerTypes).Assembly);
+        public static IEnumerable<Type> GetAll(Assembly assembly) =>
+            GetAllTypesImplementingOpenGenericType(typeof(IHandleMessage<>), assembly);
 
         private static IEnumerable<Type> GetAllTypesImplementingOpenGenericType(Type openGenericType, Assembly assembly)
         {
