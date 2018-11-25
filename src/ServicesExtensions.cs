@@ -13,7 +13,7 @@ namespace Thon.Hotels.FishBus
                 .ForEach(t => services.AddTransient(t));
             services
                 .AddSingleton<MessagingConfiguration>()
-                .AddSingleton<MessageHandlerRegistry>(p => new MessageHandlerRegistry(p, MessageHandlerTypes.GetAll))
+                .AddSingleton<MessageHandlerRegistry>(p => new MessageHandlerRegistry(MessageHandlerTypes.GetAll))
                 .AddHostedService<MessagingService>();
             return services;
         }

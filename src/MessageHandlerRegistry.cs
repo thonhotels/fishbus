@@ -8,11 +8,9 @@ namespace Thon.Hotels.FishBus
     public class MessageHandlerRegistry
     {
         private Dictionary<Type, ICollection<Type>> MessageHandlers { get; }
-        private IServiceProvider ServiceProvider { get; }
 
-        public MessageHandlerRegistry(IServiceProvider serviceProvider, Func<IEnumerable<Type>> messageHandlerTypes)
+        public MessageHandlerRegistry(Func<IEnumerable<Type>> messageHandlerTypes)
         {
-            ServiceProvider = serviceProvider;
             MessageHandlers = new Dictionary<Type, ICollection<Type>>();
             Init(messageHandlerTypes);
         }
