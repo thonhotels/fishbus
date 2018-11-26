@@ -74,5 +74,25 @@ namespace FishbusTests
             Assert.NotNull(messageType);
             Assert.Equal(typeof(MessageA), messageType);
         }
+
+        [Fact]
+        public void GetMessageTypeByNameReturnsTypeMatchingMessageLabel()
+        {
+            IEnumerable<Type> MessageHandlerTypes()
+            {
+                return new[]
+                {
+                    typeof(HandlerA),
+                    typeof(HandlerB),
+                    typeof(NotAHandler),
+                    typeof(HandlerWithLabelAttribute)
+                };
+            }
+            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
+
+            var messageType = sut.GetMessageTypeByName("A.Custom.Message.Label");
+            Assert.NotNull(messageType);
+            Assert.Equal(typeof(MessageWithLabelAttribute), messageType);
+        }
     }
 }

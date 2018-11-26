@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Thon.Hotels.FishBus
@@ -42,9 +43,16 @@ namespace Thon.Hotels.FishBus
                     .Select(t => scope.ServiceProvider.GetRequiredService(t)) :
                     new List<object>();
 
-        public Type GetMessageTypeByName(string label) =>
-            MessageHandlers
-                .Keys
-                .FirstOrDefault(type => type.FullName == label);        
+        public Type GetMessageTypeByName(string label)
+        {
+            var typeWithAttributeValue = MessageHandlers.Keys.FirstOrDefault(type =>
+                type.GetCustomAttribute(typeof(MessageLabelAttribute)) is MessageLabelAttribute attribute &&
+                attribute.Label == label);
+
+            return typeWithAttributeValue ??
+                   MessageHandlers
+                       .Keys
+                       .FirstOrDefault(type => type.FullName == label);
+        }
     }
 }
