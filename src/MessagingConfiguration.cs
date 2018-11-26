@@ -13,7 +13,7 @@ namespace Thon.Hotels.FishBus
     {
         public IEnumerable<MessageDispatcher> Dispatchers { get; private set; }
 
-        public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry)
+        public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory)
         {
             SubscriptionClient CreateSubscriptionClient(Subscription s)
             {
@@ -27,7 +27,6 @@ namespace Thon.Hotels.FishBus
                 return new QueueClient(connectionString, entityPath);
             }
 
-            IServiceScopeFactory scopeFactory = null;
             Dispatchers = messageSources
                 .Value
                 .Subscriptions
