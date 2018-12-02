@@ -4,8 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Thon.Hotels.FishBus
 {   
-    public static class SercicesExtensions
-    { 
+    public static class ServicesExtensions
+    {
+        /// Scan the given assembly or the calling assembly for MessageHandlers
+        /// and register them in the .NET Core IoC.
+        /// Fishbus framework classes are also registered
+        /// <param name="assembly">Assembly that contains the MessageHandlers</param>
         public static IServiceCollection ConfigureMessaging(this IServiceCollection services, Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
