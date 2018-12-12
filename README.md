@@ -75,3 +75,27 @@ The following appsettings.json file could be used to configure the messagsources
   }  
 }
 ```
+
+## Sending Messages
+
+```csharp
+[MessageLabel("My.Message.Label")]
+public class MyMessage
+{
+    public string A { get; set; }
+    public string B { get; set; }
+}
+
+...
+
+var publisher = new MessagePublisher(connectionString);
+
+var myMessage = new MyMessage 
+{
+    A = "a",
+    B = "b"
+};
+
+await publisher.SendAsync(myMessage);
+
+```
