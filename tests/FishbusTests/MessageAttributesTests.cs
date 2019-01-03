@@ -7,7 +7,7 @@ using Xunit;
 
 namespace FishbusTests
 {
-    public class MessageHelperTests
+    public class MessageAttributesTests
     {
         [Fact]
         public void MessageWithMessageIdAttributeUseCustomId()

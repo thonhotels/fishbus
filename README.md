@@ -122,13 +122,13 @@ var myMessage = new MyMessage
 {
     MyId = "id",
     A = "a",
-	B = "b"
+    B = "b"
 };
 
 var duplicateMessage = new MyMessage
 {
-    MyId = "id",
-	A = "a",
+    MyId = "id",	
+    A = "a",
     B = "b"
 };
 
