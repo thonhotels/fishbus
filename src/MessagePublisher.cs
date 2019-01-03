@@ -2,7 +2,6 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 using System;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,17 +23,18 @@ namespace Thon.Hotels.FishBus
 
         public async Task SendAsync<T>(T message)
         {
+            var id = MessageAttributes.GetMessageId(message);
+            var label = MessageAttributes.GetMessageLabel(message);
 
-            var label = message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
-
-            if (string.IsNullOrWhiteSpace(label))
-                throw new Exception($"Label must be specified on {message.GetType().Name} using MessageLabelAttribute");
-
-
-            await _client.SendAsync(new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
+            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
             {
                 Label = label
-            });
+            };
+
+            if (!string.IsNullOrWhiteSpace(id))
+                msg.MessageId = id;
+
+            await _client.SendAsync(msg);
         }
     }
 }
