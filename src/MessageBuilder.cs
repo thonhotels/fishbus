@@ -44,17 +44,18 @@ namespace Thon.Hotels.FishBus
             var id = GetMessageId(message);
             var label = GetMessageLabel(message);
 
-            if (string.IsNullOrWhiteSpace(correlationId))
-                correlationId = Guid.NewGuid().ToString();
-
             var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
             {
-                CorrelationId = correlationId,
                 Label = label
             };
 
             if (!string.IsNullOrWhiteSpace(id))
                 msg.MessageId = id;
+
+            if (string.IsNullOrWhiteSpace(correlationId))
+                correlationId = Guid.NewGuid().ToString();
+
+            msg.UserProperties.Add("correlationId", correlationId);
 
             return msg;
         }

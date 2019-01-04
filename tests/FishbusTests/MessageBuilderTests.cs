@@ -62,7 +62,7 @@ namespace FishbusTests
             var message = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(message);
 
-            Assert.True(Guid.TryParse(msg.CorrelationId, out _));
+            Assert.True(Guid.TryParse(msg.UserProperties["correlationId"] as string, out _));
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace FishbusTests
             var messageWithId = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(messageWithId, expected);
 
-            Assert.Equal(expected, msg.CorrelationId);
+            Assert.Equal(expected, msg.UserProperties["correlationId"] as string);
         }
     }
 }
