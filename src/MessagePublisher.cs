@@ -21,20 +21,12 @@ namespace Thon.Hotels.FishBus
             _client = new MessageSender(cs, entityPath);
         }
 
-        public async Task SendAsync<T>(T message)
+        public async Task SendAsync<T>(T message, string correlationId)
         {
-            var id = MessageAttributes.GetMessageId(message);
-            var label = MessageAttributes.GetMessageLabel(message);
-
-            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
-            {
-                Label = label
-            };
-
-            if (!string.IsNullOrWhiteSpace(id))
-                msg.MessageId = id;
-
+            var msg = MessageBuilder.BuildMessage(message, correlationId);
             await _client.SendAsync(msg);
         }
+
+        public async Task SendAsync<T>(T message) => await SendAsync(message, string.Empty);
     }
 }
