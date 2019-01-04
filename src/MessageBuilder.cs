@@ -1,10 +1,13 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using Microsoft.Azure.ServiceBus;
+using Newtonsoft.Json;
 
 namespace Thon.Hotels.FishBus
 {
-    public static class MessageAttributes
+    public static class MessageBuilder
     {
         public static string GetMessageId<T>(T message)
         {
@@ -35,5 +38,27 @@ namespace Thon.Hotels.FishBus
 
             return label;
         }
+
+        public static Message BuildMessage<T>(T message, string correlationId)
+        {
+            var id = GetMessageId(message);
+            var label = GetMessageLabel(message);
+
+            if (string.IsNullOrWhiteSpace(correlationId))
+                correlationId = Guid.NewGuid().ToString();
+
+            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
+            {
+                CorrelationId = correlationId,
+                Label = label
+            };
+
+            if (!string.IsNullOrWhiteSpace(id))
+                msg.MessageId = id;
+
+            return msg;
+        }
+
+        public static Message BuildMessage<T>(T message) => BuildMessage(message, string.Empty);
     }
 }
