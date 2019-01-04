@@ -27,6 +27,6 @@ namespace Thon.Hotels.FishBus
             await _client.SendAsync(msg);
         }
 
-        public async Task SendAsync<T>(T message) => await SendAsync(message, Guid.NewGuid().ToString());
+        public async Task SendAsync<T>(T message) => await SendAsync(message, string.Empty);
     }
 }
