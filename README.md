@@ -4,6 +4,11 @@ Tiny tiny library for receiving azure service bus messages
 ### Install
 dotnet add package fishbus
 
+### Note!
+release v0.2.7 has a breaking change.
+Interface IHandleMessage was changed.
+Handle no longer takes a delegate argument and it should return true/false to mark success or not
+
 ### Declare a message type (an Event or a Command)
 ```c#
 public class SomethingExcitingJustHappened
