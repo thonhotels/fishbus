@@ -12,7 +12,7 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerWithLabelAttribute : IHandleMessage<MessageWithLabelAttribute>
     {
-        public Task Handle(MessageWithLabelAttribute message, Func<Task> markAsComplete)
+        public Task<bool> Handle(MessageWithLabelAttribute message)
         {
             throw new NotImplementedException();
         }

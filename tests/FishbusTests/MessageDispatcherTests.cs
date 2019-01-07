@@ -43,8 +43,42 @@ namespace FishbusTests
 
             await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => Task.CompletedTask);
 
-            A.CallTo(() => handler.Handle(A<MessageA>.That.Matches(m => m.AProp1 == "hello"), A<Func<Task>>.Ignored))
+            A.CallTo(() => handler.Handle(A<MessageA>.That.Matches(m => m.AProp1 == "hello")))
                 .MustHaveHappenedOnceExactly();            
+        }
+
+        [Fact]
+        public async Task WhenProcessMessageMarksMessageWithNoHandlersComplete()
+        {
+            IEnumerable<Type> MessageHandlerTypes()
+            {
+                return new [] 
+                    {
+                        typeof(HandlerB),
+                    };
+            }
+            var scopeFactory = A.Fake<IServiceScopeFactory>();
+            var scope = A.Fake<IServiceScope>();
+            var sp = A.Fake<IServiceProvider>();
+            var handler = A.Fake<HandlerA>();
+
+            A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(HandlerA)))).Returns(handler);
+
+            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
+            A.CallTo(() => scope.ServiceProvider).Returns(sp);
+
+            var client = A.Fake<IReceiverClient>();
+            var registry = new MessageHandlerRegistry(MessageHandlerTypes);
+            var sut = new MessageDispatcher(scopeFactory, client, registry);
+
+            var isCompleted = false;
+            await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
+            {
+                isCompleted = true;
+                return Task.CompletedTask;
+            });
+
+            Assert.True(isCompleted, "the markComplete callback was not called");        
         }
     }
 }

@@ -11,9 +11,9 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerA : IHandleMessage<MessageA>
     {
-        public virtual Task Handle(MessageA message, Func<Task> markAsComplete)
+        public virtual Task<bool> Handle(MessageA message)
         {
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
     }
 }

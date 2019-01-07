@@ -5,6 +5,6 @@ namespace Thon.Hotels.FishBus
 {
     public interface IHandleMessage<T>
     {
-        Task Handle(T message, Func<Task> markAsComplete);
+        Task<bool> Handle(T message);
     }
 }

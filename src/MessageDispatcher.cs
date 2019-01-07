@@ -63,31 +63,43 @@ namespace Thon.Hotels.FishBus
             if (typeFromLabel != default(Type))
             {
                 var message = JsonConvert.DeserializeObject(body, typeFromLabel);
-
+            
                 using (var scope = ScopeFactory.CreateScope())
                 {
-                    foreach (var handler in Registry.GetHandlers(message.GetType(), scope))
-                        await CallHandler(handler, message, markCompleted);
+                    var tasks = Registry
+                                    .GetHandlers(message.GetType(), scope)
+                                    .ToList() // avoid deferred execution, we want all handlers to execute
+                                    .Select(h => CallHandler(h, message))
+                                    .ToArray();
+                    var results = await Task.WhenAll(tasks);            
+                    if (results.All(r => r))
+                        await markCompleted();                    
                 }
             }
             else
             {
-                Log.Debug("", body);
+                Log.Debug("No handler registered for the given {Label}. {@Body}", label, body);
+                await markCompleted();
             }
         }
 
-        private Task CallHandler(object handler, object message, Func<Task> markCompleted)
+        private async Task<bool> CallHandler(object handler, object message)
         {
             var tasks =
                 handler
                     .GetType()
                     .GetMethods()
                     .Where(m => m.Name == "Handle")
-                    .Select(m => (Task)m.Invoke(handler, new[] { message, markCompleted }))
+                    .Select(m => (Task<bool>)m.Invoke(handler, new[] { message }))
                     .ToArray();
+            if (!tasks.Any())
+                return true;
+            
+            if (tasks.Count() > 1)
+                Log.Warning($"More than one method named Handle in type: {handler.GetType().FullName}");
 
-            Task.WaitAll(tasks);
-            return Task.CompletedTask;
+            var result = await Task.WhenAll(tasks);
+            return result.First();
         }
 
         internal async Task Close()

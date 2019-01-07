@@ -11,7 +11,7 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerB : IHandleMessage<MessageB>
     {
-        public Task Handle(MessageB message, Func<Task> markAsComplete)
+        public Task<bool> Handle(MessageB message)
         {
             throw new NotImplementedException();
         }
