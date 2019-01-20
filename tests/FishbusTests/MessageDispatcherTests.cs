@@ -180,5 +180,53 @@ namespace FishbusTests
             Assert.False(isAborted, "the abort callback was not called");   
             Assert.Equal("", message);   
         }
+
+        [Fact]
+        public async Task WhenHandlerHandlesAandB_And_BMessage_Received_Only_B_Method_is_Called()
+        {
+            IEnumerable<Type> MessageHandlerTypes()
+            {
+                return new [] 
+                    {
+                        typeof(DuoHandler)
+                    };
+            }
+            var scopeFactory = A.Fake<IServiceScopeFactory>();
+            var scope = A.Fake<IServiceScope>();
+            var sp = A.Fake<IServiceProvider>();
+            var duoHandler = A.Fake<DuoHandler>();
+
+            A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(DuoHandler)))).Returns(duoHandler);
+
+            A.CallTo(() => duoHandler.Handle(A<MessageA>._)).Returns(Task.FromResult(HandlerResult.Success()));
+            A.CallTo(() => duoHandler.Handle(A<MessageB>._)).Returns(Task.FromResult(HandlerResult.Success()));
+
+            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
+            A.CallTo(() => scope.ServiceProvider).Returns(sp);
+
+            var client = A.Fake<IReceiverClient>();
+            var registry = new MessageHandlerRegistry(MessageHandlerTypes);
+            var sut = new MessageDispatcher(scopeFactory, client, registry);
+
+            var isCompleted = false;
+            var isAborted = false;
+            var message = "";
+            await sut.ProcessMessage(typeof(MessageB).FullName, "{aProp1: \"hello\"}", () => 
+            {
+                isCompleted = true;
+                return Task.CompletedTask;
+            }, m => 
+            {
+                message = m;
+                isAborted = true;
+                return Task.CompletedTask;
+            });
+
+            Assert.True(isCompleted, "the markComplete callback was called");  
+            Assert.False(isAborted, "the abort callback was not called");   
+            Assert.Equal("", message);  
+            A.CallTo(() => duoHandler.Handle(A<MessageA>._)).MustNotHaveHappened();
+            A.CallTo(() => duoHandler.Handle(A<MessageB>._)).MustHaveHappenedOnceExactly(); 
+        }
     }
 }

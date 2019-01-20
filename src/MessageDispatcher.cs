@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,7 +92,7 @@ namespace Thon.Hotels.FishBus
                 handler
                     .GetType()
                     .GetMethods()
-                    .Where(m => m.Name == "Handle")
+                    .Where(m => HandlesMessageOfType(m, message.GetType()))    
                     .Select(m => (Task<HandlerResult>)m.Invoke(handler, new[] { message }))
                     .ToArray();
             if (!tasks.Any())
@@ -108,6 +109,13 @@ namespace Thon.Hotels.FishBus
                 return false;
             }
             return results.Any(HandlerResult.IsFailed) ? false : true;
+        }
+
+        private bool HandlesMessageOfType(MethodInfo m, Type type)
+        {
+            var parameters = m.GetParameters();
+            if (m.Name != "Handle" || !parameters.Any()) return false;
+            return parameters[0].ParameterType == type;
         }
 
         internal async Task Close()
