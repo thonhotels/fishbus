@@ -16,9 +16,7 @@ namespace Thon.Hotels.FishBus
             if (string.IsNullOrWhiteSpace(connectionString) || !connectionString.ToLower().Contains("entitypath"))
                 throw new ArgumentNullException($"ConnectionString must be supplied with EnitityPath");
 
-
-            var (cs, entityPath) = ConnectionStringSplitter.Split(connectionString);
-            _client = new MessageSender(cs, entityPath);
+            _client = new MessageSender(new ServiceBusConnectionStringBuilder(connectionString));
         }
 
         public async Task SendAsync<T>(T message, string correlationId)

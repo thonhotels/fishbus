@@ -15,17 +15,11 @@ namespace Thon.Hotels.FishBus
 
         public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory)
         {
-            SubscriptionClient CreateSubscriptionClient(Subscription s)
-            {
-                var (connectionString, entityPath) = ConnectionStringSplitter.Split(s.ConnectionString);
-                return new SubscriptionClient(connectionString, entityPath, s.Name);
-            }
+            SubscriptionClient CreateSubscriptionClient(Subscription s) =>
+                new SubscriptionClient(new ServiceBusConnectionStringBuilder(s.ConnectionString), s.Name);
 
-            QueueClient CreateQueueClient(Queue q)
-            {
-                var (connectionString, entityPath) = ConnectionStringSplitter.Split(q.ConnectionString);
-                return new QueueClient(connectionString, entityPath);
-            }
+            QueueClient CreateQueueClient(Queue q) =>
+                new QueueClient(new ServiceBusConnectionStringBuilder(q.ConnectionString));
 
             Dispatchers = messageSources
                 .Value
