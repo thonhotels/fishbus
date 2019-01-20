@@ -11,9 +11,25 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerA : IHandleMessage<MessageA>
     {
-        public virtual Task<bool> Handle(MessageA message)
+        public virtual Task<HandlerResult> Handle(MessageA message)
         {
-            return Task.FromResult(true);
+            return Task.FromResult(HandlerResult.Success());
+        }
+    }
+
+    public class HandlerA1 : IHandleMessage<MessageA>
+    {
+        public virtual Task<HandlerResult> Handle(MessageA message)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class HandlerA2 : IHandleMessage<MessageA>
+    {
+        public virtual Task<HandlerResult> Handle(MessageA message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

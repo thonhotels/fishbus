@@ -12,7 +12,7 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerWithLabelAttribute : IHandleMessage<MessageWithLabelAttribute>
     {
-        public Task<bool> Handle(MessageWithLabelAttribute message)
+        public Task<HandlerResult> Handle(MessageWithLabelAttribute message)
         {
             throw new NotImplementedException();
         }

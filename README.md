@@ -5,6 +5,12 @@ Tiny tiny library for receiving azure service bus messages
 dotnet add package fishbus
 
 ### Note!
+release v0.2.8 has a breaking change.
+Interface IHandleMessage was changed again.
+Handle should return HandlerResult to mark success, fail or abort
+If abort is returned from a handler the message will immediately be moved to Dead letter queue,
+and not retried.
+
 release v0.2.7 has a breaking change.
 Interface IHandleMessage was changed.
 Handle no longer takes a delegate argument and it should return true/false to mark success or not
@@ -21,10 +27,10 @@ public class SomethingExcitingJustHappened
 ```c#
 public class DeleteUserHandler : IHandleMessage<SomethingExcitingJustHappened>
 {
-    public async Task Handle(SomethingExcitingJustHappened message, Func<Task> markAsCompleted)
+    public async Task<HandlerResult> Handle(SomethingExcitingJustHappened message)
     {
         Log.Information("Received SomethingExcitingJustHappened");
-        await markAsCompleted();
+        return HandlerResult.Success();
     }
 }
 ```

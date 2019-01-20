@@ -11,7 +11,7 @@ namespace FishbusTests.MessageHandlers
 
     public class HandlerB : IHandleMessage<MessageB>
     {
-        public Task<bool> Handle(MessageB message)
+        public Task<HandlerResult> Handle(MessageB message)
         {
             throw new NotImplementedException();
         }

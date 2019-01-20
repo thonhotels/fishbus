@@ -42,7 +42,9 @@ namespace Thon.Hotels.FishBus
             {
                 if (!string.IsNullOrWhiteSpace(message.Label))
                 {
-                    await ProcessMessage(message.Label, body, () => Client.CompleteAsync(message.SystemProperties.LockToken));
+                    await ProcessMessage(message.Label, body, 
+                                    () => Client.CompleteAsync(message.SystemProperties.LockToken),
+                                    m => AddToDeadLetter(message.SystemProperties.LockToken, m)) ;
                 }
                 else
                 {
@@ -57,7 +59,7 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
+        internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted, Func<string, Task> abort)
         {
             var typeFromLabel = Registry.GetMessageTypeByName(label);
             if (typeFromLabel != default(Type))
@@ -69,7 +71,7 @@ namespace Thon.Hotels.FishBus
                     var tasks = Registry
                                     .GetHandlers(message.GetType(), scope)
                                     .ToList() // avoid deferred execution, we want all handlers to execute
-                                    .Select(h => CallHandler(h, message))
+                                    .Select(h => CallHandler(h, message, abort))
                                     .ToArray();
                     var results = await Task.WhenAll(tasks);            
                     if (results.All(r => r))
@@ -83,14 +85,14 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        private async Task<bool> CallHandler(object handler, object message)
+        private async Task<bool> CallHandler(object handler, object message, Func<string, Task> abort)
         {
             var tasks =
                 handler
                     .GetType()
                     .GetMethods()
                     .Where(m => m.Name == "Handle")
-                    .Select(m => (Task<bool>)m.Invoke(handler, new[] { message }))
+                    .Select(m => (Task<HandlerResult>)m.Invoke(handler, new[] { message }))
                     .ToArray();
             if (!tasks.Any())
                 return true;
@@ -98,8 +100,14 @@ namespace Thon.Hotels.FishBus
             if (tasks.Count() > 1)
                 Log.Warning($"More than one method named Handle in type: {handler.GetType().FullName}");
 
-            var result = await Task.WhenAll(tasks);
-            return result.First();
+            var results = await Task.WhenAll(tasks);
+            var aborted = results.FirstOrDefault(HandlerResult.IsAbort);
+            if (aborted != null)
+            {
+                await abort(aborted.Message);
+                return false;
+            }
+            return results.Any(HandlerResult.IsFailed) ? false : true;
         }
 
         internal async Task Close()
