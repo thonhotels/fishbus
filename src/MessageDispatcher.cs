@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
+using Serilog.Context;
 
 // tests need access to this method:
 // internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
@@ -19,44 +20,49 @@ namespace Thon.Hotels.FishBus
 {
     public class MessageDispatcher
     {
-        private IReceiverClient Client { get; }
+        private LogCorrelationOptions LogCorrelationOptions { get; }
 
+        private IReceiverClient Client { get; }
+        
         private IServiceScopeFactory ScopeFactory { get; }
 
-        public Func<Microsoft.Azure.ServiceBus.Message, Task> CompleteAsyncDelegate { get; set; }
         private MessageHandlerRegistry Registry { get; }
 
-        public MessageDispatcher(IServiceScopeFactory scopeFactory, IReceiverClient client, MessageHandlerRegistry registry)
+        internal MessageDispatcher(IServiceScopeFactory scopeFactory, IReceiverClient client, MessageHandlerRegistry registry, LogCorrelationOptions logCorrelationOptions)
         {
+            LogCorrelationOptions = logCorrelationOptions;
             ScopeFactory = scopeFactory;
             Client = client;
-            Registry = registry;
+            Registry = registry;            
         }
 
         // Call all handlers for the message type given by the message label.
         // There can be multiple handlers per message type
         public async Task ProcessMessage(Microsoft.Azure.ServiceBus.Message message, CancellationToken token)
         {
-            var body = Encoding.UTF8.GetString(message.Body);
-            Log.Debug($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{body}");
-            try
+            using (LogCorrelationOptions.PushToLogContext.Invoke(message))
             {
-                if (!string.IsNullOrWhiteSpace(message.Label))
+                var body = Encoding.UTF8.GetString(message.Body);
+                Log.Debug($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{body}");
+                try
                 {
-                    await ProcessMessage(message.Label, body, 
-                                    () => Client.CompleteAsync(message.SystemProperties.LockToken),
-                                    m => AddToDeadLetter(message.SystemProperties.LockToken, m)) ;
+                    if (!string.IsNullOrWhiteSpace(message.Label))
+                    {
+                        await ProcessMessage(message.Label, body,
+                            () => Client.CompleteAsync(message.SystemProperties.LockToken),
+                            m => AddToDeadLetter(message.SystemProperties.LockToken, m));
+                    }
+                    else
+                    {
+                        Log.Error("Message label is not set. \n Message: {@messageBody} \n Forwarding to DLX", body);
+                        await AddToDeadLetter(message.SystemProperties.LockToken, "Message label is not set.");
+                    }
                 }
-                else
+                catch (JsonException jsonException)
                 {
-                    Log.Error("Message label is not set. \n Message: {@messageBody} \n Forwarding to DLX", body);
-                    await AddToDeadLetter(message.SystemProperties.LockToken, "Message label is not set.");
+                    Log.Error(jsonException, "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
+                    await AddToDeadLetter(message.SystemProperties.LockToken, jsonException.Message);
                 }
-            }
-            catch (JsonException jsonException)
-            {
-                Log.Error(jsonException, "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
-                await AddToDeadLetter(message.SystemProperties.LockToken, jsonException.Message);
             }
         }
 

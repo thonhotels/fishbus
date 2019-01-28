@@ -41,7 +41,7 @@ namespace FishbusTests
 
             var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry);
+            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationOptions(false));
 
             await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => Task.CompletedTask, m => Task.CompletedTask);
 
@@ -71,7 +71,7 @@ namespace FishbusTests
 
             var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry);
+            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationOptions(false));
 
             var isCompleted = false;
             await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
@@ -111,7 +111,7 @@ namespace FishbusTests
 
             var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry);
+            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationOptions(false));
 
             var isCompleted = false;
             var isAborted = false;
@@ -160,7 +160,7 @@ namespace FishbusTests
 
             var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry);
+            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationOptions(false));
 
             var isCompleted = false;
             var isAborted = false;
@@ -206,7 +206,7 @@ namespace FishbusTests
 
             var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry);
+            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationOptions(false));
 
             var isCompleted = false;
             var isAborted = false;

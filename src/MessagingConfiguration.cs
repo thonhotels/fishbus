@@ -13,7 +13,7 @@ namespace Thon.Hotels.FishBus
     {
         public IEnumerable<MessageDispatcher> Dispatchers { get; private set; }
 
-        public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory)
+        internal MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationOptions logCorrelationOptions)
         {
             SubscriptionClient CreateSubscriptionClient(Subscription s) =>
                 new SubscriptionClient(new ServiceBusConnectionStringBuilder(s.ConnectionString), s.Name);
@@ -24,12 +24,12 @@ namespace Thon.Hotels.FishBus
             Dispatchers = messageSources
                 .Value
                 .Subscriptions
-                .Select(subscription => new MessageDispatcher(scopeFactory, CreateSubscriptionClient(subscription), registry))
+                .Select(subscription => new MessageDispatcher(scopeFactory, CreateSubscriptionClient(subscription), registry, logCorrelationOptions))
                 .Concat(
                     messageSources
                         .Value
                         .Queues
-                        .Select(queue => new MessageDispatcher(scopeFactory, CreateQueueClient(queue), registry))
+                        .Select(queue => new MessageDispatcher(scopeFactory, CreateQueueClient(queue), registry, logCorrelationOptions))
                 )
                 .ToList();
         }
