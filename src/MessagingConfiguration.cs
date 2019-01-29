@@ -13,7 +13,7 @@ namespace Thon.Hotels.FishBus
     {
         public IEnumerable<MessageDispatcher> Dispatchers { get; private set; }
 
-        internal MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationOptions logCorrelationOptions)
+        public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationOptions logCorrelationOptions)
         {
             SubscriptionClient CreateSubscriptionClient(Subscription s) =>
                 new SubscriptionClient(new ServiceBusConnectionStringBuilder(s.ConnectionString), s.Name);

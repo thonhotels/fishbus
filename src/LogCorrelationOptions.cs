@@ -4,11 +4,11 @@ using Serilog.Context;
 
 namespace Thon.Hotels.FishBus
 {
-    internal class LogCorrelationOptions
+    public class LogCorrelationOptions
     {
         internal Func<Message, IDisposable> PushToLogContext { get; set; }
 
-        internal LogCorrelationOptions(bool useCorrelationLogging = true)
+        public LogCorrelationOptions(bool useCorrelationLogging = true)
         {
             if (!useCorrelationLogging)
             {
@@ -20,7 +20,7 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        internal LogCorrelationOptions(string logPropertyName, string messagePropertyName)
+        public LogCorrelationOptions(string logPropertyName, string messagePropertyName)
         {
             PushToLogContext = CreatePushToLogContext(logPropertyName, messagePropertyName);
         }
