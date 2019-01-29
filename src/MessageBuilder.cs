@@ -55,7 +55,7 @@ namespace Thon.Hotels.FishBus
             if (string.IsNullOrWhiteSpace(correlationId))
                 correlationId = Guid.NewGuid().ToString();
 
-            msg.UserProperties.Add("correlationId", correlationId);
+            msg.UserProperties.Add("logCorrelationId", correlationId);
 
             return msg;
         }

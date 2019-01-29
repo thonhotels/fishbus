@@ -57,22 +57,22 @@ namespace FishbusTests
         }
 
         [Fact]
-        public void MessageWithoutCorralationIdHasOneAssigned()
+        public void MessageWithoutCorrelationIdHasOneAssigned()
         {
             var message = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(message);
 
-            Assert.True(Guid.TryParse(msg.UserProperties["correlationId"] as string, out _));
+            Assert.True(Guid.TryParse(msg.UserProperties["logCorrelationId"] as string, out _));
         }
 
         [Fact]
-        public void ExistingCorralationIdAreNotModified()
+        public void ExistingCorrelationIdAreNotModified()
         {
             var expected = "correlationId";
             var messageWithId = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(messageWithId, expected);
 
-            Assert.Equal(expected, msg.UserProperties["correlationId"] as string);
+            Assert.Equal(expected, msg.UserProperties["logCorrelationId"] as string);
         }
     }
 }
