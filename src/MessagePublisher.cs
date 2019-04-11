@@ -21,7 +21,7 @@ namespace Thon.Hotels.FishBus
 
         public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan, string correlationId)
         {
-            var msg = MessageBuilder.BuildMessage(message, timeSpan, correlationId);            
+            var msg = MessageBuilder.BuildDelayedMessage(message, timeSpan, correlationId);            
             await _client.SendAsync(msg);
         }
 

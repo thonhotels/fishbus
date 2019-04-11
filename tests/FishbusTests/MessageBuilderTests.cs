@@ -79,7 +79,7 @@ namespace FishbusTests
         public void MessageWithDelaySetsScheduledEnqueueTime()
         {
             var messageWithId = new MessageWithMessageId();
-            var msg = MessageBuilder.BuildMessage(messageWithId, TimeSpan.FromDays(1), string.Empty);
+            var msg = MessageBuilder.BuildDelayedMessage(messageWithId, TimeSpan.FromDays(1), string.Empty);
 
             Assert.True(DateTime.UtcNow.AddHours(23) < msg.ScheduledEnqueueTimeUtc);
         }
