@@ -19,6 +19,15 @@ namespace Thon.Hotels.FishBus
             _client = new MessageSender(new ServiceBusConnectionStringBuilder(connectionString));
         }
 
+        public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan, string correlationId)
+        {
+            var msg = MessageBuilder.BuildMessage(message, timeSpan, correlationId);            
+            await _client.SendAsync(msg);
+        }
+
+        public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan) =>
+            await SendWithDelayAsync(message, timeSpan, string.Empty);
+
         public async Task SendAsync<T>(T message, string correlationId)
         {
             var msg = MessageBuilder.BuildMessage(message, correlationId);
