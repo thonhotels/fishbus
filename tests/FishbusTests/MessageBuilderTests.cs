@@ -74,5 +74,14 @@ namespace FishbusTests
 
             Assert.Equal(expected, msg.UserProperties["logCorrelationId"] as string);
         }
+
+        [Fact]
+        public void MessageWithDelaySetsScheduledEnqueueTime()
+        {
+            var messageWithId = new MessageWithMessageId();
+            var msg = MessageBuilder.BuildMessage(messageWithId, TimeSpan.FromDays(1), string.Empty);
+
+            Assert.True(DateTime.UtcNow.AddHours(23) < msg.ScheduledEnqueueTimeUtc);
+        }
     }
 }

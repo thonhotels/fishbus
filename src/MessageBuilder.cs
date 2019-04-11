@@ -39,6 +39,13 @@ namespace Thon.Hotels.FishBus
             return label;
         }
 
+        public static Message BuildMessage<T>(T message, TimeSpan timeSpan, string correlationId)
+        {
+            var msg = BuildMessage(message, correlationId);
+            msg.ScheduledEnqueueTimeUtc = DateTime.UtcNow.Add(timeSpan);
+            return msg;
+        }
+
         public static Message BuildMessage<T>(T message, string correlationId)
         {
             var id = GetMessageId(message);
