@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
-using Serilog.Context;
 
 // tests need access to this method:
 // internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
@@ -20,7 +18,7 @@ namespace Thon.Hotels.FishBus
 {
     public class MessageDispatcher
     {
-        private LogCorrelationOptions LogCorrelationOptions { get; }
+        private LogCorrelationHandler LogCorrelationHandler { get; }
 
         private IReceiverClient Client { get; }
         
@@ -28,9 +26,9 @@ namespace Thon.Hotels.FishBus
 
         private MessageHandlerRegistry Registry { get; }
 
-        internal MessageDispatcher(IServiceScopeFactory scopeFactory, IReceiverClient client, MessageHandlerRegistry registry, LogCorrelationOptions logCorrelationOptions)
+        internal MessageDispatcher(IServiceScopeFactory scopeFactory, IReceiverClient client, MessageHandlerRegistry registry, LogCorrelationHandler logCorrelationHandler)
         {
-            LogCorrelationOptions = logCorrelationOptions;
+            LogCorrelationHandler = logCorrelationHandler;
             ScopeFactory = scopeFactory;
             Client = client;
             Registry = registry;            
@@ -40,7 +38,7 @@ namespace Thon.Hotels.FishBus
         // There can be multiple handlers per message type
         public async Task ProcessMessage(Microsoft.Azure.ServiceBus.Message message, CancellationToken token)
         {
-            using (LogCorrelationOptions.PushToLogContext.Invoke(message))
+            using (LogCorrelationHandler.PushToLogContext.Invoke(message))
             {
                 var body = Encoding.UTF8.GetString(message.Body);
                 Log.Debug($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{body}");
