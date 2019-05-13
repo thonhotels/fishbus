@@ -13,26 +13,26 @@ namespace Thon.Hotels.FishBus
         /// <param name="assembly">Assembly that contains the MessageHandlers</param>
         public static IServiceCollection ConfigureMessaging(this IServiceCollection services, Assembly assembly = null)
         {
-            var logCorrelationOptions = new LogCorrelationOptions(false);
-            return services.ConfigureMessaging(logCorrelationOptions, assembly);
+            var logCorrelationHandler = new LogCorrelationHandler(false);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly);
         }
 
         public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, Assembly assembly = null)
         {
-            var logCorrelationOptions = new LogCorrelationOptions();
-            return services.ConfigureMessaging(logCorrelationOptions, assembly);
+            var logCorrelationHandler = new LogCorrelationHandler(true);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly);
         }
 
-        public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, string logPropertyName, string messagePropertyName, Assembly assembly = null)
+        public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, LogCorrelationOptions logCorrelationOptions, Assembly assembly = null)
         {
-            var logCorrelationOptions = new LogCorrelationOptions(logPropertyName, messagePropertyName);
-            return services.ConfigureMessaging(logCorrelationOptions, assembly);
+            var logCorrelationHandler = new LogCorrelationHandler(true, logCorrelationOptions);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly);
         }
 
-        private static IServiceCollection ConfigureMessaging(this IServiceCollection services, LogCorrelationOptions logCorrelationOptions, Assembly assembly = null)
+        private static IServiceCollection ConfigureMessaging(this IServiceCollection services, LogCorrelationHandler logCorrelationHandler, Assembly assembly = null)
         {
-            if (logCorrelationOptions == null)
-                throw new ArgumentNullException(nameof(logCorrelationOptions));
+            if (logCorrelationHandler == null)
+                throw new ArgumentNullException(nameof(logCorrelationHandler));
             assembly = assembly ?? Assembly.GetCallingAssembly();
             MessageHandlerTypes
                 .GetAll(assembly)
@@ -41,7 +41,7 @@ namespace Thon.Hotels.FishBus
             services
                 .AddSingleton<MessagingConfiguration>()
                 .AddSingleton(p => new MessageHandlerRegistry(() => MessageHandlerTypes.GetAll(assembly)))
-                .AddSingleton(logCorrelationOptions)
+                .AddSingleton(logCorrelationHandler)
                 .AddHostedService<MessagingService>();
 
             return services;

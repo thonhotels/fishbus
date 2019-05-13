@@ -12,13 +12,16 @@ namespace FishbusTests
         public void ConfigureMessagingWithCorrelationLogging_LoadsServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.ConfigureMessagingWithCorrelationLogging();
+            serviceCollection.ConfigureMessagingWithCorrelationLogging(new LogCorrelationOptions
+            {
+                SetCorrelationLogId = s => { }
+            });
             serviceCollection.Configure<MessageSources>((m) => { });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.NotNull(serviceProvider.GetRequiredService<MessagingConfiguration>());
             Assert.NotNull(serviceProvider.GetRequiredService<MessageHandlerRegistry>());
-            Assert.NotNull(serviceProvider.GetRequiredService<LogCorrelationOptions>());
+            Assert.NotNull(serviceProvider.GetRequiredService<LogCorrelationHandler>());
         }
 
         [Fact]
@@ -31,7 +34,7 @@ namespace FishbusTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.NotNull(serviceProvider.GetRequiredService<MessagingConfiguration>());
             Assert.NotNull(serviceProvider.GetRequiredService<MessageHandlerRegistry>());
-            Assert.NotNull(serviceProvider.GetRequiredService<LogCorrelationOptions>());
+            Assert.NotNull(serviceProvider.GetRequiredService<LogCorrelationHandler>());
         }
     }
 }
