@@ -83,5 +83,23 @@ namespace FishbusTests
 
             Assert.True(DateTime.UtcNow.AddHours(23) < msg.ScheduledEnqueueTimeUtc);
         }
+
+        [Fact]
+        public void MessageWithLabelAttributeUsesAttribute()
+        {
+            var messageWithAttribute = new MessageWithLabelAttribute();
+            var msg = MessageBuilder.BuildMessage(messageWithAttribute);
+
+            Assert.Equal("A.Custom.Message.Label", msg.Label);
+        }
+
+        [Fact]
+        public void MessageWithoutLabelAttributeUsesTypeFullName()
+        {
+            var messageWithoutAttribute = new MessageA();
+            var msg = MessageBuilder.BuildMessage(messageWithoutAttribute);
+
+            Assert.Equal(typeof(MessageA).FullName, msg.Label);
+        }
     }
 }
