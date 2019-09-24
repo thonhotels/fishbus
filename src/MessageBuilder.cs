@@ -34,7 +34,7 @@ namespace Thon.Hotels.FishBus
             var label = message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
 
             if (string.IsNullOrWhiteSpace(label))
-                throw new Exception($"Label must be specified on {message.GetType().Name} using MessageLabelAttribute");
+                return message.GetType().FullName;
 
             return label;
         }
