@@ -14,26 +14,25 @@ namespace Thon.Hotels.FishBus
         public static IServiceCollection ConfigureMessaging(this IServiceCollection services, Assembly assembly = null)
         {
             var logCorrelationHandler = new LogCorrelationHandler(false);
-            return services.ConfigureMessaging(logCorrelationHandler, assembly);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly ?? Assembly.GetCallingAssembly());
         }
 
         public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, Assembly assembly = null)
         {
             var logCorrelationHandler = new LogCorrelationHandler(true);
-            return services.ConfigureMessaging(logCorrelationHandler, assembly);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly ?? Assembly.GetCallingAssembly());
         }
 
         public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, LogCorrelationOptions logCorrelationOptions, Assembly assembly = null)
         {
             var logCorrelationHandler = new LogCorrelationHandler(true, logCorrelationOptions);
-            return services.ConfigureMessaging(logCorrelationHandler, assembly);
+            return services.ConfigureMessaging(logCorrelationHandler, assembly ?? Assembly.GetCallingAssembly());
         }
 
-        private static IServiceCollection ConfigureMessaging(this IServiceCollection services, LogCorrelationHandler logCorrelationHandler, Assembly assembly = null)
+        private static IServiceCollection ConfigureMessaging(this IServiceCollection services, LogCorrelationHandler logCorrelationHandler, Assembly assembly)
         {
             if (logCorrelationHandler == null)
                 throw new ArgumentNullException(nameof(logCorrelationHandler));
-            assembly = assembly ?? Assembly.GetCallingAssembly();
             MessageHandlerTypes
                 .GetAll(assembly)
                 .ToList()
