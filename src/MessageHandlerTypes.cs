@@ -12,15 +12,16 @@ namespace Thon.Hotels.FishBus
 
         private static IEnumerable<Type> GetAllTypesImplementingOpenGenericType(Type openGenericType, Assembly assembly)
         {
-            return from x in assembly.GetTypes()
-                   from z in x.GetInterfaces()
-                   let y = x.BaseType
-                   where
-                   (y != null && y.IsGenericType &&
-                   openGenericType.IsAssignableFrom(y.GetGenericTypeDefinition())) ||
-                   (z.IsGenericType &&
-                   openGenericType.IsAssignableFrom(z.GetGenericTypeDefinition()))
-                   select x;
+            return assembly.GetTypes()
+                .SelectMany(x => x.GetInterfaces(), (handlerType, interfaceType) => new { handlerType, interfaceType })
+                .Select(t => new { type = t, baseType = t.handlerType.BaseType })
+                .Where(t =>
+                    t.baseType != null && t.baseType.IsGenericType &&
+                    openGenericType.IsAssignableFrom(t.baseType.GetGenericTypeDefinition()) ||
+                    t.type.interfaceType.IsGenericType &&
+                    openGenericType.IsAssignableFrom(t.type.interfaceType.GetGenericTypeDefinition()))
+                .Select(t => t.type.handlerType)
+                .Distinct();
         }
     }
 }
