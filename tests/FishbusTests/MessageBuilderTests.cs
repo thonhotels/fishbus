@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using FishbusTests.MessageHandlers;
 using Thon.Hotels.FishBus;
 using Xunit;
@@ -15,9 +13,9 @@ namespace FishbusTests
             var messageId = "messageId";
             var messageWithId = new MessageWithMessageId { Id = messageId };
 
-            var value = MessageBuilder.GetMessageId(messageWithId);
+            var message = MessageBuilder.BuildMessage(messageWithId);
 
-            Assert.Equal(messageId, value);
+            Assert.Equal(messageId, message.MessageId);
         }
 
         [Fact]
@@ -26,9 +24,9 @@ namespace FishbusTests
             string messageId = null;
             var messageWithId = new MessageWithMessageId();
 
-            var value = MessageBuilder.GetMessageId(messageWithId);
+            var message = MessageBuilder.BuildMessage(messageWithId);
 
-            Assert.Equal(messageId, value);
+            Assert.Equal(messageId, message.MessageId);
         }
 
         [Fact]
@@ -36,14 +34,14 @@ namespace FishbusTests
         {
             var invalidMessage = new MessageWithTooManyMessageIds { Id = "id", AnothterId = "anotherId" };
 
-            Assert.Throws<Exception>(() => MessageBuilder.GetMessageId(invalidMessage));
+            Assert.Throws<Exception>(() => MessageBuilder.BuildMessage(invalidMessage));
         }
 
         [Fact]
         public void MessageWithMoreThanOneMessageIdAttributeThrowExcptionEvenWithIdsSetToNull()
         {
             var invalidMessage = new MessageWithTooManyMessageIds();
-            Assert.Throws<Exception>(() => MessageBuilder.GetMessageId(invalidMessage));
+            Assert.Throws<Exception>(() => MessageBuilder.BuildMessage(invalidMessage));
         }
 
         [Fact]
@@ -51,9 +49,9 @@ namespace FishbusTests
         {
             var messageWithoutMessageId = new MessageWithoutMessageId();
 
-            var value = MessageBuilder.GetMessageId(messageWithoutMessageId);
+            var message = MessageBuilder.BuildMessage(messageWithoutMessageId);
 
-            Assert.Equal(string.Empty, value);
+            Assert.Equal(null, message.MessageId);
         }
 
         [Fact]
@@ -117,7 +115,7 @@ namespace FishbusTests
 
 
         [Fact]
-        public void MessageWithMoreThanOneTimeToLiveAttributeShouldMakeGetTimeToLiveMethodThrow()
+        public void MessageWithMoreThanOneTimeToLiveAttributeShouldMakeBuilderThrow()
         {
             var timeToLive = new TimeSpan(6, 6, 6);
             var messageWithToManyTimeToLiveAttributes = new InvalidMessageWithMoreThanOneTimeToLiveAttribute
@@ -125,26 +123,26 @@ namespace FishbusTests
                 TimeToLive = timeToLive,
                 TimeToLive2 = timeToLive,
             };
-            Assert.Throws<Exception>(() => MessageBuilder.GetTimeToLive(messageWithToManyTimeToLiveAttributes));
+            Assert.Throws<Exception>(() => MessageBuilder.BuildMessage(messageWithToManyTimeToLiveAttributes));
         }
 
         [Fact]
-        public void MessageWithTimeToLiveAttributeButWrongTypeShouldMakeGetTimeToLiveMethodReturnNull()
+        public void MessageWithTimeToLiveAttributeButWrongTypeShouldMakeBuilderSetTimeToLiveToNullInBuiltMessage()
         {
             var messageWithTimeToLiveAttributeAsString = new InvalidMessageWithTimeToLiveAttributeAsString
             {
                 TimeToLiveAsString = "2019-01-01"
             };
-            var timeToLive = MessageBuilder.GetTimeToLive(messageWithTimeToLiveAttributeAsString);
-            Assert.False(timeToLive.HasValue);
+            var message = MessageBuilder.BuildMessage(messageWithTimeToLiveAttributeAsString);
+            Assert.False(message.TimeToLive == null);
         }
 
         [Fact]
-        public void MessageWithNoTimeToLiveAttributeShouldMakeTimeToLiveMethodReturnNull()
+        public void MessageWithNoTimeToLiveAttributeShouldMakeBuilderSetTimeToLiveToNullInBuiltMessage()
         {
             var messageWithNoTimeToLiveAttribute = new MessageWithNoTimeToLiveAttribute();
-            var timeToLive = MessageBuilder.GetTimeToLive(messageWithNoTimeToLiveAttribute);
-            Assert.False(timeToLive.HasValue);
+            var message = MessageBuilder.BuildMessage(messageWithNoTimeToLiveAttribute);
+            Assert.False(message.TimeToLive == null);
         }
     }
 }

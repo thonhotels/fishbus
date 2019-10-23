@@ -10,10 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Serilog;
 
-// tests need access to this method:
-// internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted)
-[assembly:System.Runtime.CompilerServices.InternalsVisibleTo("FishbusTests")]
-
 namespace Thon.Hotels.FishBus
 {
     public class MessageDispatcher
@@ -21,7 +17,7 @@ namespace Thon.Hotels.FishBus
         private LogCorrelationHandler LogCorrelationHandler { get; }
 
         private IReceiverClient Client { get; }
-        
+
         private IServiceScopeFactory ScopeFactory { get; }
 
         private MessageHandlerRegistry Registry { get; }
@@ -31,7 +27,7 @@ namespace Thon.Hotels.FishBus
             LogCorrelationHandler = logCorrelationHandler;
             ScopeFactory = scopeFactory;
             Client = client;
-            Registry = registry;            
+            Registry = registry;
         }
 
         // Call all handlers for the message type given by the message label.
@@ -70,7 +66,7 @@ namespace Thon.Hotels.FishBus
             if (typeFromLabel != default(Type))
             {
                 var message = JsonConvert.DeserializeObject(body, typeFromLabel);
-            
+
                 using (var scope = ScopeFactory.CreateScope())
                 {
                     var tasks = Registry
@@ -78,9 +74,9 @@ namespace Thon.Hotels.FishBus
                                     .ToList() // avoid deferred execution, we want all handlers to execute
                                     .Select(h => CallHandler(h, message, abort))
                                     .ToArray();
-                    var results = await Task.WhenAll(tasks);            
+                    var results = await Task.WhenAll(tasks);
                     if (results.All(r => r))
-                        await markCompleted();                    
+                        await markCompleted();
                 }
             }
             else
@@ -96,12 +92,12 @@ namespace Thon.Hotels.FishBus
                 handler
                     .GetType()
                     .GetMethods()
-                    .Where(m => HandlesMessageOfType(m, message.GetType()))    
+                    .Where(m => HandlesMessageOfType(m, message.GetType()))
                     .Select(m => (Task<HandlerResult>)m.Invoke(handler, new[] { message }))
                     .ToArray();
             if (!tasks.Any())
                 return true;
-            
+
             if (tasks.Count() > 1)
                 Log.Warning($"More than one method named Handle in type: {handler.GetType().FullName}");
 
