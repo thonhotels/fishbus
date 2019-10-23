@@ -29,6 +29,26 @@ namespace Thon.Hotels.FishBus
             return messageIdAttributes.FirstOrDefault()?.Property.GetValue(message, null) as string;
         }
 
+        public static TimeSpan? GetTimeToLive<T>(T message)
+        {
+            var timeToLiveAttribute = message.GetType().GetProperties()
+                .Select(pi => new
+                {
+                    Property = pi,
+                    Attribute = pi.GetCustomAttribute(typeof(TimeToLiveAttribute), true) as TimeToLiveAttribute
+                })
+                .Where(x => x.Attribute != null)
+                .ToList();
+
+            if (!timeToLiveAttribute.Any())
+                return null;
+
+            if (timeToLiveAttribute.Count > 1)
+                throw new Exception($"At most one property of {message.GetType().Name} can be marked with the {nameof(TimeToLiveAttribute)} attribute");
+
+            return timeToLiveAttribute.FirstOrDefault()?.Property.GetValue(message, null) as TimeSpan?;
+        }
+
         public static string GetMessageLabel<T>(T message)
         {
             var label = message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
@@ -50,6 +70,7 @@ namespace Thon.Hotels.FishBus
         {
             var id = GetMessageId(message);
             var label = GetMessageLabel(message);
+            var timeToLive = GetTimeToLive(message);
 
             var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
             {
@@ -62,6 +83,10 @@ namespace Thon.Hotels.FishBus
             if (string.IsNullOrWhiteSpace(correlationId))
                 correlationId = Guid.NewGuid().ToString();
 
+            if (timeToLive.HasValue)
+            {
+                msg.TimeToLive = timeToLive.Value;
+            }
             msg.UserProperties.Add("logCorrelationId", correlationId);
 
             return msg;

@@ -101,5 +101,50 @@ namespace FishbusTests
 
             Assert.Equal(typeof(MessageA).FullName, msg.Label);
         }
+
+        [Fact]
+        public void MessageWithTimeToLiveAttributeShouldMakeBuilderSetTimeToLiveAttributeOnBuiltMessage()
+        {
+            var timeToLive = new TimeSpan(6, 6, 6);
+            var messageWithTimeToLiveAttribute = new ValidMessageWithTimeToLiveAttribute
+            {
+                TimeToLive = timeToLive
+            };
+            var msg = MessageBuilder.BuildMessage(messageWithTimeToLiveAttribute);
+
+            Assert.Equal(timeToLive, msg.TimeToLive);
+        }
+
+
+        [Fact]
+        public void MessageWithMoreThanOneTimeToLiveAttributeShouldMakeGetTimeToLiveMethodThrow()
+        {
+            var timeToLive = new TimeSpan(6, 6, 6);
+            var messageWithToManyTimeToLiveAttributes = new InvalidMessageWithMoreThanOneTimeToLiveAttribute
+            {
+                TimeToLive = timeToLive,
+                TimeToLive2 = timeToLive,
+            };
+            Assert.Throws<Exception>(() => MessageBuilder.GetTimeToLive(messageWithToManyTimeToLiveAttributes));
+        }
+
+        [Fact]
+        public void MessageWithTimeToLiveAttributeButWrongTypeShouldMakeGetTimeToLiveMethodReturnNull()
+        {
+            var messageWithTimeToLiveAttributeAsString = new InvalidMessageWithTimeToLiveAttributeAsString
+            {
+                TimeToLiveAsString = "2019-01-01"
+            };
+            var timeToLive = MessageBuilder.GetTimeToLive(messageWithTimeToLiveAttributeAsString);
+            Assert.False(timeToLive.HasValue);
+        }
+
+        [Fact]
+        public void MessageWithNoTimeToLiveAttributeShouldMakeTimeToLiveMethodReturnNull()
+        {
+            var messageWithNoTimeToLiveAttribute = new MessageWithNoTimeToLiveAttribute();
+            var timeToLive = MessageBuilder.GetTimeToLive(messageWithNoTimeToLiveAttribute);
+            Assert.False(timeToLive.HasValue);
+        }
     }
 }
