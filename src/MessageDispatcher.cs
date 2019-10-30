@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -37,6 +38,7 @@ namespace Thon.Hotels.FishBus
             using (LogCorrelationHandler.PushToLogContext.Invoke(message))
             {
                 var body = Encoding.UTF8.GetString(message.Body);
+                var sw = Stopwatch.StartNew();
                 Log.Debug($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{body}");
                 try
                 {
@@ -57,6 +59,7 @@ namespace Thon.Hotels.FishBus
                     Log.Error(jsonException, "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
                     await AddToDeadLetter(message.SystemProperties.LockToken, jsonException.Message);
                 }
+                Log.Debug($"Completed handling message in {sw.ElapsedMilliseconds} ms");
             }
         }
 
