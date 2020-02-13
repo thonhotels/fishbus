@@ -33,7 +33,7 @@ namespace Thon.Hotels.FishBus
 
         // Call all handlers for the message type given by the message label.
         // There can be multiple handlers per message type
-        public async Task ProcessMessage(Microsoft.Azure.ServiceBus.Message message, CancellationToken token)
+        public async Task ProcessMessage(Message message, CancellationToken token)
         {
             using (LogCorrelationHandler.PushToLogContext.Invoke(message))
             {
@@ -56,9 +56,17 @@ namespace Thon.Hotels.FishBus
                 }
                 catch (JsonException jsonException)
                 {
-                    Log.Error(jsonException, "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
+                    Log.Error(jsonException,
+                        "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
                     await AddToDeadLetter(message.SystemProperties.LockToken, jsonException.Message);
                 }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Caught exception while handling message with label {Label} and body {Body}",
+                        message.Label, body);
+                    throw;
+                }
+
                 Log.Debug($"Completed handling message in {sw.ElapsedMilliseconds} ms");
             }
         }
@@ -66,7 +74,7 @@ namespace Thon.Hotels.FishBus
         internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted, Func<string, Task> abort)
         {
             var typeFromLabel = Registry.GetMessageTypeByName(label);
-            if (typeFromLabel != default(Type))
+            if (typeFromLabel != default)
             {
                 var message = JsonConvert.DeserializeObject(body, typeFromLabel);
 
@@ -111,7 +119,7 @@ namespace Thon.Hotels.FishBus
                 await abort(aborted.Message);
                 return false;
             }
-            return results.Any(HandlerResult.IsFailed) ? false : true;
+            return !results.Any(HandlerResult.IsFailed);
         }
 
         private bool HandlesMessageOfType(MethodInfo m, Type type)
