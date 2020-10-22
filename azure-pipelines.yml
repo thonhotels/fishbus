@@ -4,13 +4,13 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: 'Ubuntu 18.04'
 
 steps:
   - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
     displayName: "Run FAKE script"
     inputs:
-      FakeVersion: 5.7.2
+      FakeVersion: 5.20.3
       FakeScript: scripts/build.fsx
       WorkingDirectory: scripts
     env:
