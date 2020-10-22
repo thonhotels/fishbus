@@ -28,14 +28,14 @@ Target.create "Clean" (fun _ ->
         Shell.cleanDirs [artifacts;]
     )
 
-Target.create "Restore-packages" (fun _ ->       
+Target.create "Restore-packages" (fun _ ->
         [project;]
-        |> Seq.iter (DotNet.restore id)    
+        |> Seq.iter (DotNet.restore id)
     )
   
 Target.create "Build" (fun _ ->
         [project;]
-        |> Seq.iter (DotNet.build id)    
+        |> Seq.iter (DotNet.build id)
     )   
 
 Target.create "Test" (fun _ ->
@@ -46,14 +46,14 @@ Target.create "Test" (fun _ ->
         |> Seq.iter (DotNet.test id)
     )         
 
-Target.create "Pack" (fun _ -> 
+Target.create "Pack" (fun _ ->
     let versionNumber = VersionNumber.getFromGit ()
 
     match versionNumber with
     | Some x -> 
         Trace.log ("version number was something, doing pack")
         Shell.replaceInFiles 
-                [("$(BUILDNUMBER)", x)]  
+                [("$(BUILDNUMBER)", x)]
                 [sprintf "../Directory.Build.props" ]
         DotNet.pack 
             (fun o -> 
@@ -61,7 +61,7 @@ Target.create "Pack" (fun _ ->
                     OutputPath = Some artifacts 
                 }) 
             project
-    | None -> Trace.log ("Latest commit has no tag, no nuget created")    
+    | None -> Trace.log ("Latest commit has no tag, no nuget created")
 )
 
 "Install-dotnet"
