@@ -1,8 +1,6 @@
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
-using Newtonsoft.Json;
 using System;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Thon.Hotels.FishBus
@@ -19,9 +17,19 @@ namespace Thon.Hotels.FishBus
             _client = new MessageSender(new ServiceBusConnectionStringBuilder(connectionString));
         }
 
+
+        public async Task SendScheduledAsync<T>(T message, DateTime time, string correlationId)
+        {
+            var msg = MessageBuilder.BuildScheduledMessage(message, time, correlationId);
+            await _client.SendAsync(msg);
+        }
+
+        public Task SendScheduledAsync<T>(T message, DateTime time) =>
+            SendScheduledAsync(message, time, string.Empty);
+
         public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan, string correlationId)
         {
-            var msg = MessageBuilder.BuildDelayedMessage(message, timeSpan, correlationId);            
+            var msg = MessageBuilder.BuildDelayedMessage(message, timeSpan, correlationId);
             await _client.SendAsync(msg);
         }
 

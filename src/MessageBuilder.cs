@@ -16,6 +16,13 @@ namespace Thon.Hotels.FishBus
             return msg;
         }
 
+        internal static Message BuildScheduledMessage<T>(T message, DateTime time, string correlationId)
+        {
+            var msg = BuildMessage(message, correlationId);
+            msg.ScheduledEnqueueTimeUtc = time;
+            return msg;
+        }
+
         internal static Message BuildMessage<T>(T message) => BuildMessage(message, string.Empty);
 
         internal static Message BuildMessage<T>(T message, string correlationId)
@@ -43,6 +50,7 @@ namespace Thon.Hotels.FishBus
 
             return msg;
         }
+
 
         private static string GetMessageId<T>(T message)
         {
