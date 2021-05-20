@@ -8,11 +8,14 @@ namespace Thon.Hotels.FishBus
     public static class MessageHandlerTypes
     {
         public static IEnumerable<Type> GetAll(Assembly assembly) =>
-            GetAllTypesImplementingOpenGenericType(typeof(IHandleMessage<>), assembly);
+            GetAllTypesImplementingOpenGenericType(typeof(IHandleMessage<>), new[] {assembly});
 
-        private static IEnumerable<Type> GetAllTypesImplementingOpenGenericType(Type openGenericType, Assembly assembly)
+        public static IEnumerable<Type> GetAll(Assembly[] assemblies) =>
+            GetAllTypesImplementingOpenGenericType(typeof(IHandleMessage<>), assemblies);
+
+        private static IEnumerable<Type> GetAllTypesImplementingOpenGenericType(Type openGenericType, Assembly[] assemblies)
         {
-            return assembly.GetTypes()
+            return assemblies.SelectMany(a => a.GetTypes())
                 .SelectMany(x => x.GetInterfaces(), (handlerType, interfaceType) => new { handlerType, interfaceType })
                 .Select(t => new { type = t, baseType = t.handlerType.BaseType })
                 .Where(t =>
