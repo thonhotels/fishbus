@@ -78,16 +78,17 @@ namespace Thon.Hotels.FishBus
             {
                 var message = JsonConvert.DeserializeObject(body, typeFromLabel);
 
-                using (var scope = ScopeFactory.CreateScope())
-                {
-                    var tasks = Registry
-                                    .GetHandlers(message.GetType(), scope)
-                                    .ToList() // avoid deferred execution, we want all handlers to execute
-                                    .Select(h => CallHandler(h, message, abort))
-                                    .ToArray();
-                    var results = await Task.WhenAll(tasks);
-                    if (results.All(r => r))
-                        await markCompleted();
+                var stuff = Registry
+                                .GetHandlers(ScopeFactory, message.GetType());
+                var tasks = stuff
+                    .ToList() // avoid deferred execution, we want all handlers to execute
+                    .Select(h => CallHandler(h.handler, message, abort))
+                    .ToArray();
+                var results = await Task.WhenAll(tasks);
+                if (results.All(r => r))
+                    await markCompleted();
+                foreach(var scope in stuff.Select(s => s.scope)) {
+                    scope.Dispose();
                 }
             }
             else

@@ -16,7 +16,7 @@ namespace FishbusTests
         {
             IEnumerable<Type> MessageHandlerTypes()
             {
-                return new [] 
+                return new[]
                     {
                         typeof(HandlerA),
                         typeof(HandlerB),
@@ -28,8 +28,9 @@ namespace FishbusTests
             A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(HandlerA)))).Returns(new HandlerA());
             var scope = A.Fake<IServiceScope>();
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
-
-            var handlers = sut.GetHandlers(typeof(MessageA), scope).ToList();
+            var scopeFactory = A.Fake<IServiceScopeFactory>();
+            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
+            var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
             Assert.NotEmpty(handlers);
             Assert.Single(handlers);
             Assert.Single(handlers, h => h is HandlerA);
@@ -40,7 +41,7 @@ namespace FishbusTests
         {
             IEnumerable<Type> MessageHandlerTypes()
             {
-                return new [] 
+                return new[]
                     {
                         typeof(HandlerB),
                         typeof(NotAHandler)
@@ -49,10 +50,13 @@ namespace FishbusTests
             var sut = new MessageHandlerRegistry(MessageHandlerTypes);
             var sp = A.Fake<IServiceProvider>();
             A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(NotAHandler)))).Returns(new NotAHandler());
+            
             var scope = A.Fake<IServiceScope>();
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
+            var scopeFactory = A.Fake<IServiceScopeFactory>();
+            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
 
-            var handlers = sut.GetHandlers(typeof(MessageA), scope).ToList();
+            var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
             Assert.Empty(handlers);
         }
 
@@ -61,7 +65,7 @@ namespace FishbusTests
         {
             IEnumerable<Type> MessageHandlerTypes()
             {
-                return new [] 
+                return new[]
                     {
                         typeof(HandlerA),
                         typeof(HandlerB),

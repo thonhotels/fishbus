@@ -37,11 +37,15 @@ namespace Thon.Hotels.FishBus
             MessageHandlers[x.message].Add(x.handler);
         }
 
-        public IEnumerable<object> GetHandlers(Type messageType, IServiceScope scope) =>
+        public IEnumerable<(IServiceScope scope, object handler)> GetHandlers(IServiceScopeFactory scopeFactory, Type messageType) =>
             MessageHandlers.ContainsKey(messageType) ?
                 MessageHandlers[messageType]
-                    .Select(t => scope.ServiceProvider.GetRequiredService(t)) :
-                    new List<object>();
+                    .Select(t =>
+                    {
+                        var scope = scopeFactory.CreateScope();
+                        return (scope, scope.ServiceProvider.GetRequiredService(t));
+                    }) :
+                    new List<(IServiceScope, object)>();
 
         public Type GetMessageTypeByName(string label)
         {
