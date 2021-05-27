@@ -33,7 +33,7 @@ namespace FishbusTests
             var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
             Assert.NotEmpty(handlers);
             Assert.Single(handlers);
-            Assert.Single(handlers, h => h is HandlerA);
+            Assert.Single(handlers, h => h.handler is HandlerA);
         }
 
         [Fact]
