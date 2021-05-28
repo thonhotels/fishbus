@@ -13,5 +13,5 @@ let getFromGit () : string option =
         if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
         else None
     match tag with
-    | Regex @"^v\d*\.\d*\.(?<buildnumber>\d*)$" [ buildnumber; ] -> Some buildnumber
+    | Regex @"^v\d*\.\d*\.(?<buildnumber>.*)$" [ buildnumber; ] -> Some buildnumber
     | _ -> None
