@@ -6,17 +6,6 @@ Tiny tiny library for receiving azure service bus messages
 
 dotnet add package fishbus
 
-### Note!
-
-release v0.2.8 has a breaking change.
-Interface IHandleMessage was changed again.
-Handle should return HandlerResult to mark success, fail or abort
-If abort is returned from a handler the message will immediately be moved to Dead letter queue,
-and not retried.
-
-release v0.2.7 has a breaking change.
-Interface IHandleMessage was changed.
-Handle no longer takes a delegate argument and it should return true/false to mark success or not
 
 ### Declare a message type (an Event or a Command)
 
@@ -95,11 +84,68 @@ The following appsettings.json file could be used to configure the messagsources
   }
 }
 ```
+Both subscriptions and queues can specify the Queue/Topic name using the property `EntityName`. It is recommended to not use Connectionstrings with EntityPath if `EntityName` is set. 
+If EntityPath is part of the connectionstring, this will override the `EntityName` property.
+
+### Configuration - appsettings.json (Token credentials)
+
+The following appsettings.json file shows how TokenCredentials can be used.
+When using TokenCredentials Queue/Topics must have both `Namespace` and `EntityName` defined.
+
+```json
+{
+  "MessageSources": {
+    "Subscriptions": [
+      {
+        "Namespace": "",
+        "EntityName": "<topic name>",
+        "Name": "<subscription name>",
+        "CredentialType": "AzureCliCredential"
+      }
+    ],
+    "Queues": [
+      {
+        "Namespace": "",
+        "EntityName": "<queue name>",
+        "CredentialType": "DefaultAzureCredential"
+      }
+    ]
+  }
+}
+```
+
+### Configuration - appsettings.json - setting concurrency
+Optionally the message processors for each queue/subscription can be concurrent.
+To set the number of thrads used for each Queue/Subscription use the `MaxConcurrentCalls` which will used to set the same property on the underlying `ServiceBusProcessor`
+
+```json
+{
+  "MessageSources": {
+    "Subscriptions": [
+      {
+        "Namespace": "",
+        "EntityName": "<topic name>",
+        "Name": "<subscription name>",
+        "CredentialType": "AzureCliCredential",
+        "MaxConcurrentCalls": 2
+      }
+    ],
+    "Queues": [
+      {
+        "Namespace": "",
+        "EntityName": "<queue name>",
+        "CredentialType": "DefaultAzureCredential",
+        "MaxConcurrentCalls": 3
+      }
+    ]
+  }
+}
+```
 
 ## Sending Messages
 
 ```csharp
-[MessageLabel("My.Message.Label")]
+[MessageSubject("My.Message.Subject")]
 public class MyMessage
 {
     public string A { get; set; }
@@ -125,7 +171,7 @@ await publisher.SendAsync(myMessage);
 To leverage Azure Service Bus duplicate detection the MessageId should be set to an identifier based on your internal business logic. With Fishbus, Azure Service Bus MessageId logic can be overriden by adding the `[MessageId]` attribute to your custom message id property.
 
 ```csharp
-[MessageLabel("My.Message.With.Custom.MessageId")]
+[MessageSubject("My.Message.With.Custom.MessageId")]
 public class MyMessage
 {
     [MessageId]
@@ -161,7 +207,7 @@ await publisher.SendAsync(duplicateMessage); // Will be discarded by Azure Servi
 To override Azure Service Bus messages TimeToLive property you can, in your message, set a TimeToLive (the property name is not important) property of type `TimeSpan` which is tagged by a `[TimeToLive]` attribute. Only one property can be tagged as a `[TimeToLive]` attribute. The property will be used as the messages TimeToLive if the time span is shorter than the queues DefaultTimeToLive. Otherwise it will silently be adjusted to the default value.
 
 ```csharp
-[MessageLabel("My.Message.With.Custom.TimeToLive.Attribute")]
+[MessageSubject("My.Message.With.Custom.TimeToLive.Attribute")]
 public class MyMessage
 {
     [TimeToLive]
