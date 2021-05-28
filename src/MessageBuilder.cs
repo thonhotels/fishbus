@@ -27,7 +27,7 @@ namespace Thon.Hotels.FishBus
         internal static ServiceBusMessage BuildMessage<T>(T message, string correlationId)
         {
             var id = GetMessageId(message);
-            var subject = GetMessageLabel(message);
+            var subject = GetMessageSubject(message);
             var timeToLive = GetTimeToLive(message);
 
             var msg = new ServiceBusMessage(JsonConvert.SerializeObject(message))
@@ -71,14 +71,16 @@ namespace Thon.Hotels.FishBus
             return messageIdAttributes.FirstOrDefault()?.Property.GetValue(message, null) as string;
         }
 
-        private static string GetMessageLabel<T>(T message)
+        private static string GetMessageSubject<T>(T message)
         {
-            var label = message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
+            var subject = 
+                message.GetType().GetCustomAttribute<MessageSubjectAttribute>()?.Subject ??
+                message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
 
-            if (string.IsNullOrWhiteSpace(label))
+            if (string.IsNullOrWhiteSpace(subject))
                 return message.GetType().FullName;
 
-            return label;
+            return subject;
         }
 
         private static TimeSpan? GetTimeToLive<T>(T message)
