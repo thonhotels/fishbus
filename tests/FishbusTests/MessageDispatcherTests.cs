@@ -5,7 +5,6 @@ using Thon.Hotels.FishBus;
 using Xunit;
 using FakeItEasy;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Azure.ServiceBus.Core;
 using System.Threading.Tasks;
 
 namespace FishbusTests
@@ -36,9 +35,9 @@ namespace FishbusTests
             A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
-            var client = A.Fake<IReceiverClient>();
+            // var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationHandler(false));
+            var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
 
             await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => Task.CompletedTask, m => Task.CompletedTask);
 
@@ -66,9 +65,8 @@ namespace FishbusTests
             A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
-            var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationHandler(false));
+            var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
 
             var isCompleted = false;
             await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
@@ -106,9 +104,8 @@ namespace FishbusTests
             A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
-            var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationHandler(false));
+            var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
 
             var isCompleted = false;
             var isAborted = false;
@@ -155,9 +152,8 @@ namespace FishbusTests
             A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
-            var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationHandler(false));
+            var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
 
             var isCompleted = false;
             var isAborted = false;
@@ -201,9 +197,8 @@ namespace FishbusTests
             A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
             A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
-            var client = A.Fake<IReceiverClient>();
             var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sut = new MessageDispatcher(scopeFactory, client, registry, new LogCorrelationHandler(false));
+            var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
 
             var isCompleted = false;
             var isAborted = false;

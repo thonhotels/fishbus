@@ -1,39 +1,38 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
 namespace Thon.Hotels.FishBus
 {
     public static class MessageBuilder
     {
-        internal static Message BuildDelayedMessage<T>(T message, TimeSpan timeSpan, string correlationId)
+        internal static ServiceBusMessage BuildDelayedMessage<T>(T message, TimeSpan timeSpan, string correlationId)
         {
             var msg = BuildMessage(message, correlationId);
-            msg.ScheduledEnqueueTimeUtc = DateTime.UtcNow.Add(timeSpan);
+            msg.ScheduledEnqueueTime = DateTime.UtcNow.Add(timeSpan);
             return msg;
         }
 
-        internal static Message BuildScheduledMessage<T>(T message, DateTime time, string correlationId)
+        internal static ServiceBusMessage BuildScheduledMessage<T>(T message, DateTime time, string correlationId)
         {
             var msg = BuildMessage(message, correlationId);
-            msg.ScheduledEnqueueTimeUtc = time;
+            msg.ScheduledEnqueueTime = time;
             return msg;
         }
 
-        internal static Message BuildMessage<T>(T message) => BuildMessage(message, string.Empty);
+        internal static ServiceBusMessage BuildMessage<T>(T message) => BuildMessage(message, string.Empty);
 
-        internal static Message BuildMessage<T>(T message, string correlationId)
+        internal static ServiceBusMessage BuildMessage<T>(T message, string correlationId)
         {
             var id = GetMessageId(message);
-            var label = GetMessageLabel(message);
+            var subject = GetMessageLabel(message);
             var timeToLive = GetTimeToLive(message);
 
-            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
+            var msg = new ServiceBusMessage(JsonConvert.SerializeObject(message))
             {
-                Label = label
+                Subject = subject
             };
 
             if (!string.IsNullOrWhiteSpace(id))
@@ -46,7 +45,7 @@ namespace Thon.Hotels.FishBus
             {
                 msg.TimeToLive = timeToLive.Value;
             }
-            msg.UserProperties.Add("logCorrelationId", correlationId);
+            msg.ApplicationProperties.Add("logCorrelationId", correlationId);
 
             return msg;
         }

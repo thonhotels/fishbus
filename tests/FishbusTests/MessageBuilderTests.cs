@@ -60,7 +60,7 @@ namespace FishbusTests
             var message = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(message);
 
-            Assert.True(Guid.TryParse(msg.UserProperties["logCorrelationId"] as string, out _));
+            Assert.True(Guid.TryParse(msg.ApplicationProperties["logCorrelationId"] as string, out _));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace FishbusTests
             var messageWithId = new MessageWithMessageId();
             var msg = MessageBuilder.BuildMessage(messageWithId, expected);
 
-            Assert.Equal(expected, msg.UserProperties["logCorrelationId"] as string);
+            Assert.Equal(expected, msg.ApplicationProperties["logCorrelationId"] as string);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace FishbusTests
             var messageWithId = new MessageWithMessageId();
             var msg = MessageBuilder.BuildDelayedMessage(messageWithId, TimeSpan.FromDays(1), string.Empty);
 
-            Assert.True(DateTime.UtcNow.AddHours(23) < msg.ScheduledEnqueueTimeUtc);
+            Assert.True(DateTime.UtcNow.AddHours(23) < msg.ScheduledEnqueueTime);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace FishbusTests
             var messageWithAttribute = new MessageWithLabelAttribute();
             var msg = MessageBuilder.BuildMessage(messageWithAttribute);
 
-            Assert.Equal("A.Custom.Message.Label", msg.Label);
+            Assert.Equal("A.Custom.Message.Label", msg.Subject);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace FishbusTests
             var messageWithoutAttribute = new MessageA();
             var msg = MessageBuilder.BuildMessage(messageWithoutAttribute);
 
-            Assert.Equal(typeof(MessageA).FullName, msg.Label);
+            Assert.Equal(typeof(MessageA).FullName, msg.Subject);
         }
 
         [Fact]

@@ -1,12 +1,12 @@
 ﻿using System;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Serilog.Context;
 
 namespace Thon.Hotels.FishBus
 {
     public class LogCorrelationHandler
     {
-        internal Func<Message, IDisposable> PushToLogContext { get; set; }
+        internal Func<ServiceBusReceivedMessage, IDisposable> PushToLogContext { get; set; }
 
         internal LogCorrelationHandler(bool useCorrelationLogging, LogCorrelationOptions options = null)
         {
@@ -24,12 +24,12 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        private static Func<Message, IDisposable> CreatePushToLogContext(string logPropertyName,
+        private static Func<ServiceBusReceivedMessage, IDisposable> CreatePushToLogContext(string logPropertyName,
             string messagePropertyName, Action<string> setCorrelationLogId) =>
             (message) =>
             {
-                var logCorrelationId = message.UserProperties.ContainsKey(messagePropertyName)
-                    ? message.UserProperties[messagePropertyName]
+                var logCorrelationId = message.ApplicationProperties.ContainsKey(messagePropertyName)
+                    ? message.ApplicationProperties[messagePropertyName]
                     : Guid.NewGuid();
 
                 setCorrelationLogId?.Invoke(logCorrelationId.ToString());

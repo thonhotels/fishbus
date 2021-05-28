@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Thon.Hotels.FishBus.Options;
@@ -15,11 +16,43 @@ namespace Thon.Hotels.FishBus
 
         public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationHandler logCorrelationHandler)
         {
-            SubscriptionClient CreateSubscriptionClient(Subscription s) =>
-                new SubscriptionClient(new ServiceBusConnectionStringBuilder(s.ConnectionString), s.Name);
+            ServiceBusClient CreateClient(MessageSource s)
+            {
+                if (!string.IsNullOrEmpty(s.ConnectionString))
+                    new ServiceBusClient(s.ConnectionString);
+                if (s.CredentialType == nameof(AzureCliCredential))
+                    new ServiceBusClient(s.Namespace, new AzureCliCredential());
+                if (s.CredentialType == nameof(DefaultAzureCredential))
+                    new ServiceBusClient(s.Namespace, new DefaultAzureCredential());
+                throw new InvalidOperationException("Could not create ServiceBusClient");
+            }
 
-            QueueClient CreateQueueClient(Queue q) =>
-                new QueueClient(new ServiceBusConnectionStringBuilder(q.ConnectionString));
+            string GetEntityName(MessageSource s) =>
+                string.IsNullOrEmpty(s.EntityName) ?
+                    ServiceBusConnectionStringProperties.Parse(s.ConnectionString).EntityPath :
+                    s.EntityName;
+            
+            (ServiceBusClient,ServiceBusProcessor) CreateSubscriptionClient(Subscription s)
+            {
+                var client = CreateClient(s);
+                return (client, client.CreateProcessor(GetEntityName(s), s.Name, 
+                    new ServiceBusProcessorOptions
+                    {
+                        AutoCompleteMessages = false,
+                        MaxConcurrentCalls = s.MaxConcurrentCalls
+                    }));
+            }
+
+            (ServiceBusClient,ServiceBusProcessor) CreateQueueClient(Queue q) 
+            {
+                var client = CreateClient(q);
+                return (client, client.CreateProcessor(GetEntityName(q),
+                    new ServiceBusProcessorOptions
+                    {
+                        AutoCompleteMessages = false,
+                        MaxConcurrentCalls = q.MaxConcurrentCalls
+                    }));
+            }
 
             Dispatchers = messageSources
                 .Value
@@ -34,11 +67,10 @@ namespace Thon.Hotels.FishBus
                 .ToList();
         }
 
-        public void RegisterMessageHandlers(Func<ExceptionReceivedEventArgs, Task> exceptionReceivedHandler)
+        public async Task RegisterMessageHandlers(Func<ProcessErrorEventArgs, Task> exceptionReceivedHandler)
         {
-            Dispatchers
-                .ToList()
-                .ForEach(d => d.RegisterMessageHandler(exceptionReceivedHandler));
+            foreach(var d in Dispatchers)
+                await d.RegisterMessageHandler(exceptionReceivedHandler);
         }
 
         public async Task Close()

@@ -2,11 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Serilog;
@@ -17,53 +14,58 @@ namespace Thon.Hotels.FishBus
     {
         private LogCorrelationHandler LogCorrelationHandler { get; }
 
-        private IReceiverClient Client { get; }
+        private ServiceBusClient Client { get; }
+
+        private ServiceBusProcessor Processor { get; }
 
         private IServiceScopeFactory ScopeFactory { get; }
 
         private MessageHandlerRegistry Registry { get; }
 
-        internal MessageDispatcher(IServiceScopeFactory scopeFactory, IReceiverClient client, MessageHandlerRegistry registry, LogCorrelationHandler logCorrelationHandler)
+        internal MessageDispatcher(IServiceScopeFactory scopeFactory, (ServiceBusClient, ServiceBusProcessor) c_p, MessageHandlerRegistry registry, LogCorrelationHandler logCorrelationHandler)
         {
             LogCorrelationHandler = logCorrelationHandler;
             ScopeFactory = scopeFactory;
-            Client = client;
+            Client = c_p.Item1; 
+            Processor = c_p.Item2;
             Registry = registry;
         }
 
         // Call all handlers for the message type given by the message label.
         // There can be multiple handlers per message type
-        public async Task ProcessMessage(Message message, CancellationToken token)
+        public async Task ProcessMessage(ProcessMessageEventArgs args)
         {
-            using (LogCorrelationHandler.PushToLogContext.Invoke(message))
+            using (LogCorrelationHandler.PushToLogContext.Invoke(args.Message))
             {
-                var body = Encoding.UTF8.GetString(message.Body);
+                var body = args.Message.Body.ToString();
+                var message = args.Message;
                 var sw = Stopwatch.StartNew();
-                Log.Debug($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{body}");
+                Log.Debug($"Received message: SequenceNumber:{message.SequenceNumber} Body:{body}");
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(message.Label))
+                    
+                    if (!string.IsNullOrWhiteSpace(message.Subject))
                     {
-                        await ProcessMessage(message.Label, body,
-                            () => Client.CompleteAsync(message.SystemProperties.LockToken),
-                            m => AddToDeadLetter(message.SystemProperties.LockToken, m));
+                        await ProcessMessage(message.Subject, body,
+                            () => args.CompleteMessageAsync(args.Message),
+                            m => AddToDeadLetter(args, m));
                     }
                     else
                     {
                         Log.Error("Message label is not set. \n Message: {@messageBody} \n Forwarding to DLX", body);
-                        await AddToDeadLetter(message.SystemProperties.LockToken, "Message label is not set.");
+                        await AddToDeadLetter(args, "Message label is not set.");
                     }
                 }
                 catch (JsonException jsonException)
                 {
                     Log.Error(jsonException,
                         "Unable to deserialize message. \n Message: {@messageBody} \n Forwarding to DLX", body);
-                    await AddToDeadLetter(message.SystemProperties.LockToken, jsonException.Message);
+                    await AddToDeadLetter(args, jsonException.Message);
                 }
                 catch (Exception e)
                 {
                     Log.Error(e, "Caught exception while handling message with label {Label} and body {Body}",
-                        message.Label, body);
+                        message.Subject, body);
                     throw;
                 }
 
@@ -132,20 +134,23 @@ namespace Thon.Hotels.FishBus
 
         internal async Task Close()
         {
-            await Client.CloseAsync();
+            await Processor.StopProcessingAsync();
+            await Processor.CloseAsync();
+            await Client.DisposeAsync();
         }
 
-        internal void RegisterMessageHandler(Func<ExceptionReceivedEventArgs, Task> exceptionReceivedHandler)
+        internal Task RegisterMessageHandler(Func<ProcessErrorEventArgs, Task> exceptionReceivedHandler)
         {
-            Client.RegisterMessageHandler(ProcessMessage, new MessageHandlerOptions(exceptionReceivedHandler)
-            {
-                AutoComplete = false,
-            });
+            Processor.ProcessMessageAsync += ProcessMessage;
+            Processor.ProcessErrorAsync += exceptionReceivedHandler;
+            return Processor.StartProcessingAsync();
+            // Processor.RegisterMessageHandler(ProcessMessage, new MessageHandlerOptions(exceptionReceivedHandler)
+            // {
+            //     AutoComplete = false,
+            // });
         }
 
-        private async Task AddToDeadLetter(string lockToken, string errorMessage)
-        {
-            await Client.DeadLetterAsync(lockToken, "Invalid message", errorMessage);
-        }
+        private Task AddToDeadLetter(ProcessMessageEventArgs args, string errorMessage) =>
+            args.DeadLetterMessageAsync(args.Message, "Invalid message", errorMessage);
     }
 }
