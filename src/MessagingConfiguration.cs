@@ -19,11 +19,11 @@ namespace Thon.Hotels.FishBus
             ServiceBusClient CreateClient(MessageSource s)
             {
                 if (!string.IsNullOrEmpty(s.ConnectionString))
-                    new ServiceBusClient(s.ConnectionString);
+                    return new ServiceBusClient(s.ConnectionString);
                 if (s.CredentialType == nameof(AzureCliCredential))
-                    new ServiceBusClient(s.Namespace, new AzureCliCredential());
+                    return new ServiceBusClient(s.Namespace, new AzureCliCredential());
                 if (s.CredentialType == nameof(DefaultAzureCredential))
-                    new ServiceBusClient(s.Namespace, new DefaultAzureCredential());
+                    return new ServiceBusClient(s.Namespace, new DefaultAzureCredential());
                 throw new InvalidOperationException("Could not create ServiceBusClient");
             }
 
@@ -31,11 +31,11 @@ namespace Thon.Hotels.FishBus
                 string.IsNullOrEmpty(s.EntityName) ?
                     ServiceBusConnectionStringProperties.Parse(s.ConnectionString).EntityPath :
                     s.EntityName;
-            
-            (ServiceBusClient,ServiceBusProcessor) CreateSubscriptionClient(Subscription s)
+
+            (ServiceBusClient, ServiceBusProcessor) CreateSubscriptionClient(Subscription s)
             {
                 var client = CreateClient(s);
-                return (client, client.CreateProcessor(GetEntityName(s), s.Name, 
+                return (client, client.CreateProcessor(GetEntityName(s), s.Name,
                     new ServiceBusProcessorOptions
                     {
                         AutoCompleteMessages = false,
@@ -43,7 +43,7 @@ namespace Thon.Hotels.FishBus
                     }));
             }
 
-            (ServiceBusClient,ServiceBusProcessor) CreateQueueClient(Queue q) 
+            (ServiceBusClient, ServiceBusProcessor) CreateQueueClient(Queue q)
             {
                 var client = CreateClient(q);
                 return (client, client.CreateProcessor(GetEntityName(q),
@@ -69,7 +69,7 @@ namespace Thon.Hotels.FishBus
 
         public async Task RegisterMessageHandlers(Func<ProcessErrorEventArgs, Task> exceptionReceivedHandler)
         {
-            foreach(var d in Dispatchers)
+            foreach (var d in Dispatchers)
                 await d.RegisterMessageHandler(exceptionReceivedHandler);
         }
 
