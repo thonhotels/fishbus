@@ -47,16 +47,15 @@ namespace Thon.Hotels.FishBus
                     }) :
                     new List<(IServiceScope, object)>();
 
-        public Type GetMessageTypeByName(string label)
+        public Type GetMessageTypeByName(string subject)
         {
             var typeWithAttributeValue = MessageHandlers.Keys.FirstOrDefault(type =>
-                type.GetCustomAttribute(typeof(MessageLabelAttribute)) is MessageLabelAttribute attribute &&
-                attribute.Label == label);
-
+                (type.GetCustomAttribute(typeof(MessageSubjectAttribute)) is MessageSubjectAttribute attribute && attribute.Subject == subject) ||
+                (type.GetCustomAttribute(typeof(MessageLabelAttribute)) is MessageLabelAttribute labelAttribute && labelAttribute.Label == subject));
             return typeWithAttributeValue ??
                    MessageHandlers
                        .Keys
-                       .FirstOrDefault(type => type.FullName == label);
+                       .FirstOrDefault(type => type.FullName == subject);
         }
     }
 }

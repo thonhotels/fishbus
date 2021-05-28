@@ -26,7 +26,7 @@ namespace Thon.Hotels.FishBus
         {
             LogCorrelationHandler = logCorrelationHandler;
             ScopeFactory = scopeFactory;
-            Client = c_p.Item1; 
+            Client = c_p.Item1;
             Processor = c_p.Item2;
             Registry = registry;
         }
@@ -43,7 +43,7 @@ namespace Thon.Hotels.FishBus
                 Log.Debug($"Received message: SequenceNumber:{message.SequenceNumber} Body:{body}");
                 try
                 {
-                    
+
                     if (!string.IsNullOrWhiteSpace(message.Subject))
                     {
                         await ProcessMessage(message.Subject, body,
@@ -73,29 +73,29 @@ namespace Thon.Hotels.FishBus
             }
         }
 
-        internal async Task ProcessMessage(string label, string body, Func<Task> markCompleted, Func<string, Task> abort)
+        internal async Task ProcessMessage(string subject, string body, Func<Task> markCompleted, Func<string, Task> abort)
         {
-            var typeFromLabel = Registry.GetMessageTypeByName(label);
-            if (typeFromLabel != default)
+            var typeFromSubject = Registry.GetMessageTypeByName(subject);
+            if (typeFromSubject != default)
             {
-                var message = JsonConvert.DeserializeObject(body, typeFromLabel);
+                var message = JsonConvert.DeserializeObject(body, typeFromSubject);
 
-                var stuff = Registry
-                                .GetHandlers(ScopeFactory, message.GetType());
-                var tasks = stuff
+                var scopeAndHandlers = Registry.GetHandlers(ScopeFactory, message.GetType());
+                var tasks = scopeAndHandlers
                     .ToList() // avoid deferred execution, we want all handlers to execute
                     .Select(h => CallHandler(h.handler, message, abort))
                     .ToArray();
                 var results = await Task.WhenAll(tasks);
                 if (results.All(r => r))
                     await markCompleted();
-                foreach(var scope in stuff.Select(s => s.scope)) {
+                foreach (var scope in scopeAndHandlers.Select(s => s.scope))
+                {
                     scope.Dispose();
                 }
             }
             else
             {
-                Log.Debug("No handler registered for the given {Label}. {@Body}", label, body);
+                Log.Debug("No handler registered for the given {Label}. {@Body}", subject, body);
                 await markCompleted();
             }
         }
