@@ -1,6 +1,7 @@
 using Azure.Messaging.ServiceBus;
 using System;
 using System.Threading.Tasks;
+using Azure.Core;
 
 namespace Thon.Hotels.FishBus
 {
@@ -16,6 +17,21 @@ namespace Thon.Hotels.FishBus
 
             _entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
             _client = new ServiceBusClient(connectionString);
+        }
+        
+        public MessagePublisher(string fullyQualifiedNamespace, string entityPath, TokenCredential tokenCredential)
+        {
+            if (string.IsNullOrWhiteSpace(fullyQualifiedNamespace))
+                throw new ArgumentNullException("fullyQualifiedNamespace must be supplied");
+            
+            if (string.IsNullOrWhiteSpace(entityPath))
+                throw new ArgumentNullException("entityPath must be supplied");
+            
+            if (tokenCredential == null)
+                throw new ArgumentNullException("tokenCredential must not be null");
+
+            _entityPath = entityPath;
+            _client = new ServiceBusClient(fullyQualifiedNamespace, tokenCredential);
         }
 
 
