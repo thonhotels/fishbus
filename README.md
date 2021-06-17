@@ -166,6 +166,30 @@ await publisher.SendAsync(myMessage);
 
 ```
 
+## Sending Messages with azure credential
+
+```csharp
+[MessageSubject("My.Message.Subject")]
+public class MyMessage
+{
+    public string A { get; set; }
+    public string B { get; set; }
+}
+
+...
+
+var publisher = new MessagePublisher("dev-service-bus", "subject.commands", new DefaultAzureCredential());
+
+var myMessage = new MyMessage
+{
+    A = "a",
+    B = "b"
+};
+
+await publisher.SendAsync(myMessage);
+
+```
+
 ## Sending Message with custom Message Id
 
 To leverage Azure Service Bus duplicate detection the MessageId should be set to an identifier based on your internal business logic. With Fishbus, Azure Service Bus MessageId logic can be overriden by adding the `[MessageId]` attribute to your custom message id property.
