@@ -91,13 +91,14 @@ If EntityPath is part of the connectionstring, this will override the `EntityNam
 
 The following appsettings.json file shows how TokenCredentials can be used.
 When using TokenCredentials Queue/Topics must have both `Namespace` and `EntityName` defined.
+Namespace need to be a "[fully qualified namespace](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/messaging.servicebus-readme-pre#authenticating-with-azureidentity)". 
 
 ```json
 {
   "MessageSources": {
     "Subscriptions": [
       {
-        "Namespace": "",
+        "Namespace": "my-namespace.servicebus.windows.net",
         "EntityName": "<topic name>",
         "Name": "<subscription name>",
         "CredentialType": "AzureCliCredential"
@@ -105,7 +106,7 @@ When using TokenCredentials Queue/Topics must have both `Namespace` and `EntityN
     ],
     "Queues": [
       {
-        "Namespace": "",
+        "Namespace": "my-namespace.servicebus.windows.net",
         "EntityName": "<queue name>",
         "CredentialType": "DefaultAzureCredential"
       }
@@ -123,7 +124,7 @@ To set the number of thrads used for each Queue/Subscription use the `MaxConcurr
   "MessageSources": {
     "Subscriptions": [
       {
-        "Namespace": "",
+        "Namespace": "my-namespace.servicebus.windows.net",
         "EntityName": "<topic name>",
         "Name": "<subscription name>",
         "CredentialType": "AzureCliCredential",
@@ -132,7 +133,7 @@ To set the number of thrads used for each Queue/Subscription use the `MaxConcurr
     ],
     "Queues": [
       {
-        "Namespace": "",
+        "Namespace": "my-namespace.servicebus.windows.net",
         "EntityName": "<queue name>",
         "CredentialType": "DefaultAzureCredential",
         "MaxConcurrentCalls": 3
@@ -178,7 +179,7 @@ public class MyMessage
 
 ...
 
-var publisher = new MessagePublisher("dev-service-bus", "subject.commands", new DefaultAzureCredential());
+var publisher = new MessagePublisher("my-namespace.servicebus.windows.net", "subject.commands", new DefaultAzureCredential());
 
 var myMessage = new MyMessage
 {
