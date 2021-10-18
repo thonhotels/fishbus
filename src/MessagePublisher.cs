@@ -7,38 +7,38 @@ namespace Thon.Hotels.FishBus
 {
     public class MessagePublisher
     {
-        private readonly ServiceBusClient _client;
-        private readonly string _entityPath;
+        private readonly ServiceBusSender _sender;
 
         public MessagePublisher(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString) || !connectionString.ToLower().Contains("entitypath"))
                 throw new ArgumentNullException($"ConnectionString must be supplied with EnitityPath");
 
-            _entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
-            _client = new ServiceBusClient(connectionString);
+            var entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
+            var client = new ServiceBusClient(connectionString);
+            _sender = client.CreateSender(entityPath);
         }
-        
+
         public MessagePublisher(string fullyQualifiedNamespace, string entityPath, TokenCredential tokenCredential)
         {
             if (string.IsNullOrWhiteSpace(fullyQualifiedNamespace))
                 throw new ArgumentNullException("fullyQualifiedNamespace must be supplied");
-            
+
             if (string.IsNullOrWhiteSpace(entityPath))
                 throw new ArgumentNullException("entityPath must be supplied");
-            
+
             if (tokenCredential == null)
                 throw new ArgumentNullException("tokenCredential must not be null");
 
-            _entityPath = entityPath;
-            _client = new ServiceBusClient(fullyQualifiedNamespace, tokenCredential);
+            var client = new ServiceBusClient(fullyQualifiedNamespace, tokenCredential);
+            _sender = client.CreateSender(entityPath);
         }
 
 
         public async Task SendScheduledAsync<T>(T message, DateTime time, string correlationId)
         {
             var msg = MessageBuilder.BuildScheduledMessage(message, time, correlationId);
-            await Sender.SendMessageAsync(msg);
+            await _sender.SendMessageAsync(msg);
         }
 
         public Task SendScheduledAsync<T>(T message, DateTime time) =>
@@ -47,7 +47,7 @@ namespace Thon.Hotels.FishBus
         public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan, string correlationId)
         {
             var msg = MessageBuilder.BuildDelayedMessage(message, timeSpan, correlationId);
-            await Sender.SendMessageAsync(msg);
+            await _sender.SendMessageAsync(msg);
         }
 
         public async Task SendWithDelayAsync<T>(T message, TimeSpan timeSpan) =>
@@ -56,12 +56,9 @@ namespace Thon.Hotels.FishBus
         public async Task SendAsync<T>(T message, string correlationId)
         {
             var msg = MessageBuilder.BuildMessage(message, correlationId);
-            await Sender.SendMessageAsync(msg);
+            await _sender.SendMessageAsync(msg);
         }
 
         public async Task SendAsync<T>(T message) => await SendAsync(message, string.Empty);
-
-        private ServiceBusSender Sender =>
-            _client.CreateSender(_entityPath);
     }
 }
