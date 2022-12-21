@@ -19,3 +19,5 @@ steps:
     displayName: "Run NUKE ☢️"
     inputs:
       script: './build.cmd'
+  - publish: artifacts
+    artifact: artifacts
