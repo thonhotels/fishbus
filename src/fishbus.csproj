@@ -8,6 +8,7 @@
     <LangVersion>Latest</LangVersion>
     <RootNamespace>Thon.Hotels.FishBus</RootNamespace>
     <PackageId>FishBus</PackageId>
+    <Version>0.2.23</Version>
   </PropertyGroup>
 
   <ItemGroup>
