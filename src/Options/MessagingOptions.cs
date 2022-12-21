@@ -5,6 +5,10 @@ namespace Thon.Hotels.FishBus.Options;
 
 public class MessagingOptions
 {
+    public MessagingOptions()
+    {
+        Assemblies = new[] { Assembly.GetCallingAssembly() };
+    }
     public TokenCredential TokenCredential { get; set; }
     public string FullyQualifiedNamespace { get; set; }
     public Assembly[] Assemblies { get; set; }
