@@ -25,7 +25,7 @@ public class MessagingService : IHostedService
         }
         catch (Exception exception)
         {
-            Log.Error($"Error registering message handler", exception);
+            Log.Error(exception,"Error registering message handler");
         }
     }
 

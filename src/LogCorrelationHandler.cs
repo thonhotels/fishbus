@@ -12,7 +12,7 @@ public class LogCorrelationHandler
     {
         if (!useCorrelationLogging)
         {
-            PushToLogContext = (message) => new EmptyContextPusher();
+            PushToLogContext = _ => new EmptyContextPusher();
         }
         else
         {
@@ -26,7 +26,7 @@ public class LogCorrelationHandler
 
     private static Func<ServiceBusReceivedMessage, IDisposable> CreatePushToLogContext(string logPropertyName,
         string messagePropertyName, Action<string> setCorrelationLogId) =>
-        (message) =>
+        message =>
         {
             var logCorrelationId = message.ApplicationProperties.ContainsKey(messagePropertyName)
                 ? message.ApplicationProperties[messagePropertyName]

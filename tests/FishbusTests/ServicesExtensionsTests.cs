@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Thon.Hotels.FishBus;
 using Thon.Hotels.FishBus.Options;
 using Xunit;
+using MessagingConfiguration = Thon.Hotels.FishBus.MessagingConfiguration;
 
 namespace FishbusTests;
 

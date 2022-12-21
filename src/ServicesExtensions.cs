@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Thon.Hotels.FishBus.Options;
 
 namespace Thon.Hotels.FishBus;
 
@@ -13,51 +14,80 @@ public static class ServicesExtensions
     /// <param name="assembly">Assembly that contains the MessageHandlers</param>
     public static IServiceCollection ConfigureMessaging(this IServiceCollection services)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(false);
-        return services.ConfigureMessaging(logCorrelationHandler, new[] {Assembly.GetCallingAssembly()});
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = false,
+            Assemblies = new[] {Assembly.GetCallingAssembly()}
+        });
     }
 
     public static IServiceCollection ConfigureMessaging(this IServiceCollection services, params Assembly[] assemblies)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(false);
-        return services.ConfigureMessaging(logCorrelationHandler, assemblies);
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = false,
+            Assemblies = assemblies
+        });
     }
 
     public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(true);
-        return services.ConfigureMessaging(logCorrelationHandler, new[] {Assembly.GetCallingAssembly()});
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = true,
+            Assemblies = new[] {Assembly.GetCallingAssembly()}
+        });
     }
 
     public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, params Assembly[] assemblies)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(true);
-        return services.ConfigureMessaging(logCorrelationHandler, assemblies);
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = true,
+            Assemblies = assemblies
+        });
     }
 
     public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, LogCorrelationOptions logCorrelationOptions)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(true, logCorrelationOptions);
-        return services.ConfigureMessaging(logCorrelationHandler, new[] {Assembly.GetCallingAssembly()});
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = true,
+            LogCorrelationOptions = logCorrelationOptions,
+            Assemblies = new[] {Assembly.GetCallingAssembly()}
+        });
     }
 
     public static IServiceCollection ConfigureMessagingWithCorrelationLogging(this IServiceCollection services, LogCorrelationOptions logCorrelationOptions, params Assembly[] assemblies)
     {
-        var logCorrelationHandler = new LogCorrelationHandler(true, logCorrelationOptions);
-        return services.ConfigureMessaging(logCorrelationHandler, assemblies);
+        return services.ConfigureMessaging(new MessagingOptions
+        {
+            WithCorrelationLogging = true,
+            LogCorrelationOptions = logCorrelationOptions
+        });
     }
 
-    private static IServiceCollection ConfigureMessaging(this IServiceCollection services, LogCorrelationHandler logCorrelationHandler, Assembly[] assemblies)
+    public static IServiceCollection ConfigureMessaging(this IServiceCollection services, MessagingOptions messagingOptions)
     {
+        var logCorrelationHandler = new LogCorrelationHandler(messagingOptions.WithCorrelationLogging, messagingOptions.LogCorrelationOptions);
+        services.AddOptions<MessagingOptions>()
+            .Configure(options =>
+            {
+                options.Assemblies = messagingOptions.Assemblies;
+                options.TokenCredential = messagingOptions.TokenCredential;
+                options.FullyQualifiedNamespace = messagingOptions.FullyQualifiedNamespace;
+                options.LogCorrelationOptions = messagingOptions.LogCorrelationOptions;
+                options.WithCorrelationLogging = messagingOptions.WithCorrelationLogging;
+            });
         if (logCorrelationHandler == null)
             throw new ArgumentNullException(nameof(logCorrelationHandler));
         MessageHandlerTypes
-            .GetAll(assemblies)
+            .GetAll(messagingOptions.Assemblies)
             .ToList()
             .ForEach(t => services.AddTransient(t));
         services
             .AddSingleton<MessagingConfiguration>()
-            .AddSingleton(p => new MessageHandlerRegistry(() => MessageHandlerTypes.GetAll(assemblies)))
+            .AddSingleton(p => new MessageHandlerRegistry(() => MessageHandlerTypes.GetAll(messagingOptions.Assemblies)))
             .AddSingleton(logCorrelationHandler)
             .AddHostedService<MessagingService>();
 

@@ -14,10 +14,17 @@ public class MessagingConfiguration
 {
     public IEnumerable<MessageDispatcher> Dispatchers { get; private set; }
 
-    public MessagingConfiguration(IOptions<MessageSources> messageSources, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationHandler logCorrelationHandler)
+    public MessagingConfiguration(IOptions<MessageSources> messageSources,
+        IOptions<MessagingOptions> messagingOptions, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationHandler logCorrelationHandler)
     {
         ServiceBusClient CreateClient(MessageSource s)
         {
+            if (messagingOptions.Value.TokenCredential != null &&
+                !string.IsNullOrEmpty(messagingOptions.Value.FullyQualifiedNamespace))
+            {
+                return new ServiceBusClient(messagingOptions.Value.FullyQualifiedNamespace, messagingOptions.Value.TokenCredential);
+            }
+            
             if (!string.IsNullOrEmpty(s.ConnectionString))
                 return new ServiceBusClient(s.ConnectionString);
             if (s.CredentialType == nameof(AzureCliCredential))
