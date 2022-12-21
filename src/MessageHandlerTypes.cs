@@ -19,7 +19,7 @@ public static class MessageHandlerTypes
             .SelectMany(x => x.GetInterfaces(), (handlerType, interfaceType) => new { handlerType, interfaceType })
             .Select(t => new { type = t, baseType = t.handlerType.BaseType })
             .Where(t =>
-                t.baseType != null && t.baseType.IsGenericType &&
+                t.baseType is { IsGenericType: true } &&
                 openGenericType.IsAssignableFrom(t.baseType.GetGenericTypeDefinition()) ||
                 t.type.interfaceType.IsGenericType &&
                 openGenericType.IsAssignableFrom(t.type.interfaceType.GetGenericTypeDefinition()))

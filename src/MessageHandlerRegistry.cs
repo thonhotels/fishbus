@@ -19,12 +19,12 @@ public class MessageHandlerRegistry
     private void Init(Func<IEnumerable<Type>> messageHandlerTypes)
     {
         messageHandlerTypes()
-            .SelectMany(t => GetHandledCommands(t))
+            .SelectMany(GetHandledCommands)
             .ToList()
             .ForEach(AddHandledCommand);
     }
 
-    private IEnumerable<(Type handler, Type message)> GetHandledCommands(Type messageHandlerType) =>
+    private static IEnumerable<(Type handler, Type message)> GetHandledCommands(Type messageHandlerType) =>
         messageHandlerType
             .GetInterfaces()
             .Where(i => typeof(IHandleMessage<>).IsAssignableFrom(i.GetGenericTypeDefinition()))
