@@ -1,15 +1,14 @@
 using System;
 
-namespace Thon.Hotels.FishBus
-{
-    [AttributeUsage(AttributeTargets.Class)]
-    public class MessageSubjectAttribute : Attribute
-    {
-        public string Subject { get; }
+namespace Thon.Hotels.FishBus;
 
-        public MessageSubjectAttribute(string subject)
-        {
-            Subject = subject;
-        }
+[AttributeUsage(AttributeTargets.Class)]
+public class MessageSubjectAttribute : Attribute
+{
+    public string Subject { get; }
+
+    public MessageSubjectAttribute(string subject)
+    {
+        Subject = subject;
     }
 }

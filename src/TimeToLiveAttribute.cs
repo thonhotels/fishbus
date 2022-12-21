@@ -1,9 +1,8 @@
 using System;
 
-namespace Thon.Hotels.FishBus
+namespace Thon.Hotels.FishBus;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public class TimeToLiveAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class TimeToLiveAttribute : Attribute
-    {
-    }
 }

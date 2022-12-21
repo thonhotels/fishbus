@@ -6,26 +6,25 @@ using FluentAssertions;
 using Thon.Hotels.FishBus;
 using Xunit;
 
-namespace FishbusTests
+namespace FishbusTests;
+
+public class MessageHandlerTypesTests
 {
-    public class MessageHandlerTypesTests
+    [Fact]
+    public void GetAll_MessageHandlers_ReturnsEachHandlerExactlyOnce()
     {
-        [Fact]
-        public void GetAll_MessageHandlers_ReturnsEachHandlerExactlyOnce()
+        var expectedHandlers = new List<Type>
         {
-            var expectedHandlers = new List<Type>
-            {
-                typeof(DuoHandler),
-                typeof(HandlerA),
-                typeof(HandlerA1),
-                typeof(HandlerA2),
-                typeof(HandlerB),
-                typeof(HandlerWithLabelAttribute)
-            };
+            typeof(DuoHandler),
+            typeof(HandlerA),
+            typeof(HandlerA1),
+            typeof(HandlerA2),
+            typeof(HandlerB),
+            typeof(HandlerWithLabelAttribute)
+        };
 
-            var messageHandlers = MessageHandlerTypes.GetAll(Assembly.GetExecutingAssembly());
+        var messageHandlers = MessageHandlerTypes.GetAll(Assembly.GetExecutingAssembly());
 
-            messageHandlers.Should().BeEquivalentTo(expectedHandlers);
-        }
+        messageHandlers.Should().BeEquivalentTo(expectedHandlers);
     }
 }

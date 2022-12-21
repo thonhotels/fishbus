@@ -2,45 +2,44 @@
 using Azure.Messaging.ServiceBus;
 using Serilog.Context;
 
-namespace Thon.Hotels.FishBus
+namespace Thon.Hotels.FishBus;
+
+public class LogCorrelationHandler
 {
-    public class LogCorrelationHandler
+    internal Func<ServiceBusReceivedMessage, IDisposable> PushToLogContext { get; set; }
+
+    internal LogCorrelationHandler(bool useCorrelationLogging, LogCorrelationOptions options = null)
     {
-        internal Func<ServiceBusReceivedMessage, IDisposable> PushToLogContext { get; set; }
-
-        internal LogCorrelationHandler(bool useCorrelationLogging, LogCorrelationOptions options = null)
+        if (!useCorrelationLogging)
         {
-            if (!useCorrelationLogging)
-            {
-                PushToLogContext = (message) => new EmptyContextPusher();
-            }
-            else
-            {
-                var logPropertyName = options?.LogPropertyName ?? "CorrelationId";
-                var messagePropertyName = options?.MessagePropertyName ?? "logCorrelationId";
-
-                PushToLogContext =
-                    CreatePushToLogContext(logPropertyName, messagePropertyName, options?.SetCorrelationLogId);
-            }
+            PushToLogContext = (message) => new EmptyContextPusher();
         }
+        else
+        {
+            var logPropertyName = options?.LogPropertyName ?? "CorrelationId";
+            var messagePropertyName = options?.MessagePropertyName ?? "logCorrelationId";
 
-        private static Func<ServiceBusReceivedMessage, IDisposable> CreatePushToLogContext(string logPropertyName,
-            string messagePropertyName, Action<string> setCorrelationLogId) =>
-            (message) =>
-            {
-                var logCorrelationId = message.ApplicationProperties.ContainsKey(messagePropertyName)
-                    ? message.ApplicationProperties[messagePropertyName]
-                    : Guid.NewGuid();
-
-                setCorrelationLogId?.Invoke(logCorrelationId.ToString());
-                return LogContext.PushProperty(logPropertyName, logCorrelationId);
-            };
+            PushToLogContext =
+                CreatePushToLogContext(logPropertyName, messagePropertyName, options?.SetCorrelationLogId);
+        }
     }
 
-    internal class EmptyContextPusher : IDisposable
-    {
-        public void Dispose()
+    private static Func<ServiceBusReceivedMessage, IDisposable> CreatePushToLogContext(string logPropertyName,
+        string messagePropertyName, Action<string> setCorrelationLogId) =>
+        (message) =>
         {
-        }
+            var logCorrelationId = message.ApplicationProperties.ContainsKey(messagePropertyName)
+                ? message.ApplicationProperties[messagePropertyName]
+                : Guid.NewGuid();
+
+            setCorrelationLogId?.Invoke(logCorrelationId.ToString());
+            return LogContext.PushProperty(logPropertyName, logCorrelationId);
+        };
+}
+
+internal class EmptyContextPusher : IDisposable
+{
+    public void Dispose()
+    {
     }
 }
