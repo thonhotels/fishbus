@@ -74,8 +74,7 @@ namespace Thon.Hotels.FishBus
         private static string GetMessageSubject<T>(T message)
         {
             var subject = 
-                message.GetType().GetCustomAttribute<MessageSubjectAttribute>()?.Subject ??
-                message.GetType().GetCustomAttribute<MessageLabelAttribute>()?.Label;
+                message.GetType().GetCustomAttribute<MessageSubjectAttribute>()?.Subject;
 
             if (string.IsNullOrWhiteSpace(subject))
                 return message.GetType().FullName;

@@ -3,31 +3,31 @@ using Thon.Hotels.FishBus;
 
 namespace FishbusTests.MessageHandlers
 {
-    [MessageLabel("ValidMessageWithTimeToLiveAttribute")]
+    [MessageSubject("ValidMessageWithTimeToLiveAttribute")]
     public class ValidMessageWithTimeToLiveAttribute
     {
-        [TimeToLiveAttribute]
+        [TimeToLive]
         public TimeSpan TimeToLive { get; set; }
     }
 
-    [MessageLabel("InvalidMessageWithMoteThanOneTimeToLiveAttribute")]
+    [MessageSubject("InvalidMessageWithMoteThanOneTimeToLiveAttribute")]
     public class InvalidMessageWithMoreThanOneTimeToLiveAttribute
     {
-        [TimeToLiveAttribute]
+        [TimeToLive]
         public TimeSpan TimeToLive { get; set; }
 
-        [TimeToLiveAttribute]
+        [TimeToLive]
         public TimeSpan TimeToLive2 { get; set; }
     }
 
-    [MessageLabel("InvalidMessageWithTimeToLiveAttributeAsString")]
+    [MessageSubject("InvalidMessageWithTimeToLiveAttributeAsString")]
     public class InvalidMessageWithTimeToLiveAttributeAsString
     {
-        [TimeToLiveAttribute]
+        [TimeToLive]
         public string TimeToLiveAsString { get; set; }
     }
 
-    [MessageLabel("MessageWithNoTimeToLiveAttribute")]
+    [MessageSubject("MessageWithNoTimeToLiveAttribute")]
     public class MessageWithNoTimeToLiveAttribute
     {
     }

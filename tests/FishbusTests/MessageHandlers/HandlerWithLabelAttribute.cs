@@ -4,7 +4,7 @@ using Thon.Hotels.FishBus;
 
 namespace FishbusTests.MessageHandlers
 {
-    [MessageLabel("A.Custom.Message.Label")]
+    [MessageSubject("A.Custom.Message.Label")]
     public class MessageWithLabelAttribute
     {
 

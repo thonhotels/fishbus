@@ -50,8 +50,7 @@ namespace Thon.Hotels.FishBus
         public Type GetMessageTypeByName(string subject)
         {
             var typeWithAttributeValue = MessageHandlers.Keys.FirstOrDefault(type =>
-                (type.GetCustomAttribute(typeof(MessageSubjectAttribute)) is MessageSubjectAttribute attribute && attribute.Subject == subject) ||
-                (type.GetCustomAttribute(typeof(MessageLabelAttribute)) is MessageLabelAttribute labelAttribute && labelAttribute.Label == subject));
+                type.GetCustomAttribute(typeof(MessageSubjectAttribute)) is MessageSubjectAttribute attribute && attribute.Subject == subject);
             return typeWithAttributeValue ??
                    MessageHandlers
                        .Keys

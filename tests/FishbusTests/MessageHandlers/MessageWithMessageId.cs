@@ -2,14 +2,14 @@
 
 namespace FishbusTests.MessageHandlers
 {
-    [MessageLabel("A.Message.With.MessageId")]
+    [MessageSubject("A.Message.With.MessageId")]
     public class MessageWithMessageId
     {
         [MessageId]
         public string Id { get; set; }
     }
 
-    [MessageLabel("A.Message.With.Too.Many.MessageIds")]
+    [MessageSubject("A.Message.With.Too.Many.MessageIds")]
     public class MessageWithTooManyMessageIds
     {
         [MessageId]
@@ -18,7 +18,7 @@ namespace FishbusTests.MessageHandlers
         public string AnothterId { get; set; }
     }
 
-    [MessageLabel("A.Message.Without.MessageId")]
+    [MessageSubject("A.Message.Without.MessageId")]
     public class MessageWithoutMessageId
     {
         public string Id { get; set; }
