@@ -8,7 +8,7 @@ using Nuke.Common.Utilities.Collections;
 
 class Build : NukeBuild
 {
-    public static int Main () => Execute<Build>(x => x.PublishArtifacts);
+    public static int Main () => Execute<Build>(x => x.Pack);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -69,14 +69,5 @@ class Build : NukeBuild
                 s.SetProject(Solution.GetProject("fishbus"))
                     .SetConfiguration(Configuration)
                     .SetOutputDirectory(ArtifactsDirectory));
-        });
-    
-    Target PublishArtifacts => _ => _
-        .DependsOn(Pack)
-        .Executes(() =>
-        {
-            var project = Solution.GetProject("fishbus");
-            var nupkg = project?.Directory.GlobFiles($"**/{Configuration}/*.nupkg").First();
-            FileSystemTasks.CopyFileToDirectory(nupkg, ArtifactsDirectory);
         });
 }
