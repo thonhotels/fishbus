@@ -1,10 +1,8 @@
-using System;
 using System.Threading.Tasks;
 
-namespace Thon.Hotels.FishBus
+namespace Thon.Hotels.FishBus;
+
+public interface IHandleMessage<T>
 {
-    public interface IHandleMessage<T>
-    {
-        Task<HandlerResult> Handle(T message);
-    }
+    Task<HandlerResult> Handle(T message);
 }

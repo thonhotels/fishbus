@@ -1,34 +1,33 @@
 ﻿using System;
 using Thon.Hotels.FishBus;
 
-namespace FishbusTests.MessageHandlers
+namespace FishbusTests.MessageHandlers;
+
+[MessageSubject("ValidMessageWithTimeToLiveAttribute")]
+public class ValidMessageWithTimeToLiveAttribute
 {
-    [MessageLabel("ValidMessageWithTimeToLiveAttribute")]
-    public class ValidMessageWithTimeToLiveAttribute
-    {
-        [TimeToLiveAttribute]
-        public TimeSpan TimeToLive { get; set; }
-    }
+    [TimeToLive]
+    public TimeSpan TimeToLive { get; set; }
+}
 
-    [MessageLabel("InvalidMessageWithMoteThanOneTimeToLiveAttribute")]
-    public class InvalidMessageWithMoreThanOneTimeToLiveAttribute
-    {
-        [TimeToLiveAttribute]
-        public TimeSpan TimeToLive { get; set; }
+[MessageSubject("InvalidMessageWithMoteThanOneTimeToLiveAttribute")]
+public class InvalidMessageWithMoreThanOneTimeToLiveAttribute
+{
+    [TimeToLive]
+    public TimeSpan TimeToLive { get; set; }
 
-        [TimeToLiveAttribute]
-        public TimeSpan TimeToLive2 { get; set; }
-    }
+    [TimeToLive]
+    public TimeSpan TimeToLive2 { get; set; }
+}
 
-    [MessageLabel("InvalidMessageWithTimeToLiveAttributeAsString")]
-    public class InvalidMessageWithTimeToLiveAttributeAsString
-    {
-        [TimeToLiveAttribute]
-        public string TimeToLiveAsString { get; set; }
-    }
+[MessageSubject("InvalidMessageWithTimeToLiveAttributeAsString")]
+public class InvalidMessageWithTimeToLiveAttributeAsString
+{
+    [TimeToLive]
+    public string TimeToLiveAsString { get; set; }
+}
 
-    [MessageLabel("MessageWithNoTimeToLiveAttribute")]
-    public class MessageWithNoTimeToLiveAttribute
-    {
-    }
+[MessageSubject("MessageWithNoTimeToLiveAttribute")]
+public class MessageWithNoTimeToLiveAttribute
+{
 }

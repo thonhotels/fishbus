@@ -7,96 +7,95 @@ using FakeItEasy;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-namespace FishbusTests
+namespace FishbusTests;
+
+public class MessageHandlerRegistryTests
 {
-    public class MessageHandlerRegistryTests
+    [Fact]
+    public void GetHandlersReturnHandlerForGivenMessageType()
     {
-        [Fact]
-        public void GetHandlersReturnHandlerForGivenMessageType()
+        IEnumerable<Type> MessageHandlerTypes()
         {
-            IEnumerable<Type> MessageHandlerTypes()
+            return new[]
             {
-                return new[]
-                    {
-                        typeof(HandlerA),
-                        typeof(HandlerB),
-                        typeof(NotAHandler)
-                    };
-            }
-            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sp = A.Fake<IServiceProvider>();
-            A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(HandlerA)))).Returns(new HandlerA());
-            var scope = A.Fake<IServiceScope>();
-            A.CallTo(() => scope.ServiceProvider).Returns(sp);
-            var scopeFactory = A.Fake<IServiceScopeFactory>();
-            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
-            var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
-            Assert.NotEmpty(handlers);
-            Assert.Single(handlers);
-            Assert.Single(handlers, h => h.handler is HandlerA);
+                typeof(HandlerA),
+                typeof(HandlerB),
+                typeof(NotAHandler)
+            };
         }
+        var sut = new MessageHandlerRegistry(MessageHandlerTypes);
+        var sp = A.Fake<IServiceProvider>();
+        A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(HandlerA)))).Returns(new HandlerA());
+        var scope = A.Fake<IServiceScope>();
+        A.CallTo(() => scope.ServiceProvider).Returns(sp);
+        var scopeFactory = A.Fake<IServiceScopeFactory>();
+        A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
+        var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
+        Assert.NotEmpty(handlers);
+        Assert.Single(handlers);
+        Assert.Single(handlers, h => h.handler is HandlerA);
+    }
 
-        [Fact]
-        public void GetHandlersDoesNotReturnHandlerForGivenMessageTypeIfHandlerIsntARealHandler()
+    [Fact]
+    public void GetHandlersDoesNotReturnHandlerForGivenMessageTypeIfHandlerIsntARealHandler()
+    {
+        IEnumerable<Type> MessageHandlerTypes()
         {
-            IEnumerable<Type> MessageHandlerTypes()
+            return new[]
             {
-                return new[]
-                    {
-                        typeof(HandlerB),
-                        typeof(NotAHandler)
-                    };
-            }
-            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
-            var sp = A.Fake<IServiceProvider>();
-            A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(NotAHandler)))).Returns(new NotAHandler());
+                typeof(HandlerB),
+                typeof(NotAHandler)
+            };
+        }
+        var sut = new MessageHandlerRegistry(MessageHandlerTypes);
+        var sp = A.Fake<IServiceProvider>();
+        A.CallTo(() => sp.GetService(A<Type>.That.IsEqualTo(typeof(NotAHandler)))).Returns(new NotAHandler());
             
-            var scope = A.Fake<IServiceScope>();
-            A.CallTo(() => scope.ServiceProvider).Returns(sp);
-            var scopeFactory = A.Fake<IServiceScopeFactory>();
-            A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
+        var scope = A.Fake<IServiceScope>();
+        A.CallTo(() => scope.ServiceProvider).Returns(sp);
+        var scopeFactory = A.Fake<IServiceScopeFactory>();
+        A.CallTo(() => scopeFactory.CreateScope()).Returns(scope);
 
-            var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
-            Assert.Empty(handlers);
-        }
+        var handlers = sut.GetHandlers(scopeFactory, typeof(MessageA)).ToList();
+        Assert.Empty(handlers);
+    }
 
-        [Fact]
-        public void GetMessageTypeByNameReturnsTypeOfRegisteredMessage()
+    [Fact]
+    public void GetMessageTypeByNameReturnsTypeOfRegisteredMessage()
+    {
+        IEnumerable<Type> MessageHandlerTypes()
         {
-            IEnumerable<Type> MessageHandlerTypes()
+            return new[]
             {
-                return new[]
-                    {
-                        typeof(HandlerA),
-                        typeof(HandlerB),
-                        typeof(NotAHandler)
-                    };
-            }
-            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
-
-            var messageType = sut.GetMessageTypeByName(typeof(MessageA).FullName);
-            Assert.NotNull(messageType);
-            Assert.Equal(typeof(MessageA), messageType);
+                typeof(HandlerA),
+                typeof(HandlerB),
+                typeof(NotAHandler)
+            };
         }
+        var sut = new MessageHandlerRegistry(MessageHandlerTypes);
 
-        [Fact]
-        public void GetMessageTypeByNameReturnsTypeMatchingMessageLabel()
+        var messageType = sut.GetMessageTypeByName(typeof(MessageA).FullName);
+        Assert.NotNull(messageType);
+        Assert.Equal(typeof(MessageA), messageType);
+    }
+
+    [Fact]
+    public void GetMessageTypeByNameReturnsTypeMatchingMessageLabel()
+    {
+        IEnumerable<Type> MessageHandlerTypes()
         {
-            IEnumerable<Type> MessageHandlerTypes()
+            return new[]
             {
-                return new[]
-                {
-                    typeof(HandlerA),
-                    typeof(HandlerB),
-                    typeof(NotAHandler),
-                    typeof(HandlerWithLabelAttribute)
-                };
-            }
-            var sut = new MessageHandlerRegistry(MessageHandlerTypes);
-
-            var messageType = sut.GetMessageTypeByName("A.Custom.Message.Label");
-            Assert.NotNull(messageType);
-            Assert.Equal(typeof(MessageWithLabelAttribute), messageType);
+                typeof(HandlerA),
+                typeof(HandlerB),
+                typeof(NotAHandler),
+                typeof(HandlerWithLabelAttribute)
+            };
         }
+        var sut = new MessageHandlerRegistry(MessageHandlerTypes);
+
+        var messageType = sut.GetMessageTypeByName("A.Custom.Message.Label");
+        Assert.NotNull(messageType);
+        Assert.Equal(typeof(MessageWithLabelAttribute), messageType);
     }
 }

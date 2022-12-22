@@ -2,18 +2,17 @@ using System;
 using System.Threading.Tasks;
 using Thon.Hotels.FishBus;
 
-namespace FishbusTests.MessageHandlers
+namespace FishbusTests.MessageHandlers;
+
+public class MessageB
 {
-    public class MessageB
-    {
 
-    }
+}
 
-    public class HandlerB : IHandleMessage<MessageB>
+public class HandlerB : IHandleMessage<MessageB>
+{
+    public Task<HandlerResult> Handle(MessageB message)
     {
-        public Task<HandlerResult> Handle(MessageB message)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

@@ -1,3 +1,6 @@
+0.2.23
+- Version bumps
+
 0.2.21:
 - fix bug: when multiple handlers were configured for a command or event they would all get the same scope. Now different handlers get different scopes and thus avoid problems when taking dependencies on objects such as EF Db contexts
 - Use `Azure.Messaging.ServiceBus` instead of `Microsoft.Azure.ServiceBus`

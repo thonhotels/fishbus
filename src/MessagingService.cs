@@ -5,46 +5,45 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Thon.Hotels.FishBus
+namespace Thon.Hotels.FishBus;
+
+/// The main/singelton service that contains all messaging clients
+public class MessagingService : IHostedService
 {
-    /// The main/singelton service that contains all messaging clients
-    public class MessagingService : IHostedService
+    private MessagingConfiguration Configuration { get; }
+
+    public MessagingService(MessagingConfiguration configuration)
     {
-        private MessagingConfiguration Configuration { get; }
+        Configuration = configuration;
+    }
 
-        public MessagingService(MessagingConfiguration configuration)
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            Configuration = configuration;
+            await Configuration.RegisterMessageHandlers(ExceptionReceivedHandler);
         }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            try
-            {
-                await Configuration.RegisterMessageHandlers(ExceptionReceivedHandler);
-            }
-            catch (Exception exception)
-            {
-                Log.Error($"Error registering message handler", exception);
-            }
+            Log.Error(exception,"Error registering message handler");
         }
+    }
 
-        Task ExceptionReceivedHandler(ProcessErrorEventArgs args)
-        {
-            Log.Error(args.Exception,
-                        $@"Message handler encountered an exception.
+    Task ExceptionReceivedHandler(ProcessErrorEventArgs args)
+    {
+        Log.Error(args.Exception,
+            $@"Message handler encountered an exception.
                         ErrorSource: {Enum.GetName(typeof(ServiceBusErrorSource), args.ErrorSource)}
                         Entity Path: {args.EntityPath}
                         Namespace: {args.FullyQualifiedNamespace}");
 
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
+    }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            Log.Information("Signal received. Gracefully shutting down.");
-            await Configuration.Close();
-            Thread.Sleep(1000);
-        }
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        Log.Information("Signal received. Gracefully shutting down.");
+        await Configuration.Close();
+        Thread.Sleep(1000);
     }
 }
