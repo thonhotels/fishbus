@@ -115,6 +115,35 @@ Namespace need to be a "[fully qualified namespace](https://docs.microsoft.com/e
 }
 ```
 
+The following configuration will allow for one given namespace and more flexible tokencredentials.
+
+```csharp
+services.ConfigureMessaging(new MessagingOptions
+{
+    FullyQualifiedNamespace = "my-namespace.servicebus.windows.net",
+    TokenCredential = new DefaultAzureCredential()
+});
+```
+Which simplifies config of the sources:
+
+```json
+{
+  "MessageSources": {
+    "Subscriptions": [
+      {
+        "EntityName": "<topic name>",
+        "Name": "<subscription name>"
+      }
+    ],
+    "Queues": [
+      {
+        "EntityName": "<queue name>"
+      }
+    ]
+  }
+}
+```
+
 ### Configuration - appsettings.json - setting concurrency
 Optionally the message processors for each queue/subscription can be concurrent.
 To set the number of thrads used for each Queue/Subscription use the `MaxConcurrentCalls` which will used to set the same property on the underlying `ServiceBusProcessor`
