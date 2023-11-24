@@ -5,6 +5,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
+using Serilog;
 
 class Build : NukeBuild
 {
@@ -45,14 +46,14 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var testProject = Solution.GetProject("FishbusTests");
+            var testProject = RootDirectory / "tests" / "FishbusTests";
             DotNetTasks.DotNetTest(x => x
-                .SetProjectFile(testProject)
+                .SetProjectFile(testProject / "FishbusTests.csproj")
                 .SetConfiguration(Configuration)
                 .SetLoggers("xunit")
                 .SetDataCollector("XPlat Code Coverage"));
             
-            var testResults = testProject?.Directory.GlobFiles("**/TestResults/TestResults.xml")
+            var testResults = testProject?.GlobFiles("**/TestResults/TestResults.xml")
                 .Select(x => x.ToString());
             
             AzurePipelines.Instance?.PublishTestResults(
