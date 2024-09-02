@@ -134,7 +134,7 @@ public class MessageBuilderTests
             TimeToLiveAsString = "2019-01-01"
         };
         var message = MessageBuilder.BuildMessage(messageWithTimeToLiveAttributeAsString);
-        Assert.False(message.TimeToLive == null);
+        Assert.False(message.TimeToLive == default);
     }
 
     [Fact]
@@ -142,6 +142,6 @@ public class MessageBuilderTests
     {
         var messageWithNoTimeToLiveAttribute = new MessageWithNoTimeToLiveAttribute();
         var message = MessageBuilder.BuildMessage(messageWithNoTimeToLiveAttribute);
-        Assert.False(message.TimeToLive == null);
+        Assert.False(message.TimeToLive == default);
     }
 }

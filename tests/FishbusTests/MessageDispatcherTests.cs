@@ -37,9 +37,9 @@ public class MessageDispatcherTests
 
         // var client = A.Fake<IReceiverClient>();
         var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
+        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false), DefaultJsonOptions.Get);
 
-        await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => Task.CompletedTask, m => Task.CompletedTask);
+        await sut.ProcessMessage(typeof(MessageA).FullName, "{\"aProp1\": \"hello\"}", () => Task.CompletedTask, m => Task.CompletedTask);
 
         A.CallTo(() => handler.Handle(A<MessageA>.That.Matches(m => m.AProp1 == "hello")))
             .MustHaveHappenedOnceExactly();            
@@ -66,10 +66,10 @@ public class MessageDispatcherTests
         A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
         var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
+        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false), DefaultJsonOptions.Get);
 
         var isCompleted = false;
-        await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
+        await sut.ProcessMessage(typeof(MessageA).FullName, "{\"aProp1\": \"hello\"}", () => 
         {
             isCompleted = true;
             return Task.CompletedTask;
@@ -105,12 +105,12 @@ public class MessageDispatcherTests
         A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
         var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
+        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false), DefaultJsonOptions.Get);
 
         var isCompleted = false;
         var isAborted = false;
         var message = "";
-        await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
+        await sut.ProcessMessage(typeof(MessageA).FullName, "{\"aProp1\": \"hello\"}", () => 
         {
             isCompleted = true;
             return Task.CompletedTask;
@@ -153,12 +153,12 @@ public class MessageDispatcherTests
         A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
         var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
+        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false), DefaultJsonOptions.Get);
 
         var isCompleted = false;
         var isAborted = false;
         var message = "";
-        await sut.ProcessMessage(typeof(MessageA).FullName, "{aProp1: \"hello\"}", () => 
+        await sut.ProcessMessage(typeof(MessageA).FullName, "{\"aProp1\": \"hello\"}", () => 
         {
             isCompleted = true;
             return Task.CompletedTask;
@@ -198,12 +198,12 @@ public class MessageDispatcherTests
         A.CallTo(() => scope.ServiceProvider).Returns(sp);
 
         var registry = new MessageHandlerRegistry(MessageHandlerTypes);
-        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false));
+        var sut = new MessageDispatcher(scopeFactory, (null, null), registry, new LogCorrelationHandler(false), DefaultJsonOptions.Get);
 
         var isCompleted = false;
         var isAborted = false;
         var message = "";
-        await sut.ProcessMessage(typeof(MessageB).FullName, "{aProp1: \"hello\"}", () => 
+        await sut.ProcessMessage(typeof(MessageB).FullName, "{\"aProp1\": \"hello\"}", () => 
         {
             isCompleted = true;
             return Task.CompletedTask;

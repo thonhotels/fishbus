@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using Azure.Messaging.ServiceBus;
-using Newtonsoft.Json;
 
 namespace Thon.Hotels.FishBus;
 
@@ -30,7 +30,7 @@ public static class MessageBuilder
         var subject = GetMessageSubject(message);
         var timeToLive = GetTimeToLive(message);
 
-        var msg = new ServiceBusMessage(JsonConvert.SerializeObject(message))
+        var msg = new ServiceBusMessage(JsonSerializer.Serialize(message, DefaultJsonOptions.Get))
         {
             Subject = subject
         };

@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fishbus", "src\fishbus.csproj", "{793A8FC2-A64A-4ABC-9040-DC8CA67F212A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fishbus", "src\fishbus.csproj", "{793A8FC2-A64A-4ABC-9040-DC8CA67F212A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6C516347-080E-4A77-B4C5-0ABFA3EC8E54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FishbusTests", "tests\FishbusTests\FishbusTests.csproj", "{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FishbusTests", "tests\FishbusTests\FishbusTests.csproj", "{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "build", "build\build.csproj", "{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}"
 EndProject
@@ -20,12 +20,7 @@ Global
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{793A8FC2-A64A-4ABC-9040-DC8CA67F212A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{793A8FC2-A64A-4ABC-9040-DC8CA67F212A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{793A8FC2-A64A-4ABC-9040-DC8CA67F212A}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -50,6 +45,19 @@ Global
 		{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84}.Release|x64.Build.0 = Release|Any CPU
 		{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84}.Release|x86.ActiveCfg = Release|Any CPU
 		{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84}.Release|x86.Build.0 = Release|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|x64.Build.0 = Debug|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Debug|x86.Build.0 = Debug|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|x64.ActiveCfg = Release|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|x64.Build.0 = Release|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|x86.ActiveCfg = Release|Any CPU
+		{F197A5B1-8813-453C-A6E1-8EEF9B9ACD88}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{34F8BB30-BEF3-4D9F-937F-0A31E66F2A84} = {6C516347-080E-4A77-B4C5-0ABFA3EC8E54}

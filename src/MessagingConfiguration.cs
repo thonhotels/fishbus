@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
@@ -15,7 +16,10 @@ public class MessagingConfiguration
     public IEnumerable<MessageDispatcher> Dispatchers { get; private set; }
 
     public MessagingConfiguration(IOptions<MessageSources> messageSources,
-        IOptions<MessagingOptions> messagingOptions, MessageHandlerRegistry registry, IServiceScopeFactory scopeFactory, LogCorrelationHandler logCorrelationHandler)
+        IOptions<MessagingOptions> messagingOptions, 
+        MessageHandlerRegistry registry, 
+        IServiceScopeFactory scopeFactory, 
+        LogCorrelationHandler logCorrelationHandler)
     {
         ServiceBusClient CreateClient(MessageSource s)
         {
@@ -61,15 +65,23 @@ public class MessagingConfiguration
                 }));
         }
 
+        var jsonOptions = new JsonSerializerOptions(DefaultJsonOptions.Get);
+        foreach (var converter in messagingOptions.Value.JsonOptions.Converters)
+        {
+            jsonOptions.Converters.Add(converter);
+        }
+        
         Dispatchers = messageSources
             .Value
             .Subscriptions
-            .Select(subscription => new MessageDispatcher(scopeFactory, CreateSubscriptionClient(subscription), registry, logCorrelationHandler))
+            .Select(subscription => new MessageDispatcher(
+                scopeFactory,CreateSubscriptionClient(subscription), registry, logCorrelationHandler, jsonOptions))
             .Concat(
                 messageSources
                     .Value
                     .Queues
-                    .Select(queue => new MessageDispatcher(scopeFactory, CreateQueueClient(queue), registry, logCorrelationHandler))
+                    .Select(queue => new MessageDispatcher(
+                        scopeFactory, CreateQueueClient(queue), registry, logCorrelationHandler, jsonOptions))
             )
             .ToList();
     }

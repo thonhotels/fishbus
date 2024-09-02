@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace Thon.Hotels.FishBus;
@@ -13,6 +13,8 @@ namespace Thon.Hotels.FishBus;
 public class MessageDispatcher
 {
     private LogCorrelationHandler LogCorrelationHandler { get; }
+    
+    public JsonSerializerOptions JsonOptions { get; }
 
     private ServiceBusClient Client { get; }
 
@@ -22,9 +24,15 @@ public class MessageDispatcher
 
     private MessageHandlerRegistry Registry { get; }
 
-    internal MessageDispatcher(IServiceScopeFactory scopeFactory, (ServiceBusClient, ServiceBusProcessor) c_p, MessageHandlerRegistry registry, LogCorrelationHandler logCorrelationHandler)
+    internal MessageDispatcher(
+        IServiceScopeFactory scopeFactory, 
+        (ServiceBusClient, ServiceBusProcessor) c_p, 
+        MessageHandlerRegistry registry, 
+        LogCorrelationHandler logCorrelationHandler,
+        JsonSerializerOptions jsonOptions)
     {
         LogCorrelationHandler = logCorrelationHandler;
+        JsonOptions = jsonOptions;
         ScopeFactory = scopeFactory;
         Client = c_p.Item1;
         Processor = c_p.Item2;
@@ -78,7 +86,7 @@ public class MessageDispatcher
         var typeFromSubject = Registry.GetMessageTypeByName(subject);
         if (typeFromSubject != default)
         {
-            var message = JsonConvert.DeserializeObject(body, typeFromSubject);
+            var message = JsonSerializer.Deserialize(body, typeFromSubject, JsonOptions);
 
             var scopeAndHandlers = Registry.GetHandlers(ScopeFactory, message.GetType());
             var tasks = scopeAndHandlers
@@ -144,10 +152,6 @@ public class MessageDispatcher
         Processor.ProcessMessageAsync += ProcessMessage;
         Processor.ProcessErrorAsync += exceptionReceivedHandler;
         return Processor.StartProcessingAsync();
-        // Processor.RegisterMessageHandler(ProcessMessage, new MessageHandlerOptions(exceptionReceivedHandler)
-        // {
-        //     AutoComplete = false,
-        // });
     }
 
     private Task AddToDeadLetter(ProcessMessageEventArgs args, string errorMessage) =>
