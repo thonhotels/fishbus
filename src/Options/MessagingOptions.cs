@@ -14,5 +14,5 @@ public class MessagingOptions
     public Assembly[] Assemblies { get; set; }
     public bool WithCorrelationLogging { get; set; }
     public LogCorrelationOptions LogCorrelationOptions { get; set; }
-    public JsonOptions JsonOptions { get; set; }
+    public JsonOptions JsonOptions { get; set; } = new();
 }
